@@ -1,5 +1,6 @@
 import { defineField, defineType } from "sanity";
 import { ParentsInput } from "../components/ParentsInput";
+import { ChildrenInput } from "../components/ChildrenInput";
 
 export const personType = defineType({
   name: "person",
@@ -97,6 +98,9 @@ export const personType = defineType({
       name: "children",
       title: "Children",
       type: "array",
+      components: {
+        input: ChildrenInput,
+      },
       of: [
         {
           type: "reference",
