@@ -12,6 +12,7 @@ export interface Person {
   isFounder?: boolean;
   parents?: { _id: string; name: string }[];
   spouses?: { _id: string; name: string }[];
+  children?: { _id: string; name: string }[];
 }
 
 export type FamilyNodeType = "coupleNode" | "singleNode";

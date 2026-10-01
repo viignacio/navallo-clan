@@ -24,7 +24,9 @@ export async function GET() {
 
     const data = await serverClient.fetch(PERSON_QUERY);
 
-    const rawMembers = (data || []).map((d: any) => {
+    const memberMap = new Map<string, any>();
+
+    (data || []).forEach((d: any) => {
       // Deduplicate spouses by _id
       const spouseMap = new Map<string, { _id: string; name: string }>();
       (d.spouses || []).forEach((s: any) => {
@@ -33,7 +35,7 @@ export async function GET() {
         }
       });
 
-      return {
+      memberMap.set(d._id, {
         _id: d._id,
         name: d.name,
         nickname: d.nickname || undefined,
@@ -46,20 +48,16 @@ export async function GET() {
         isFounder: Boolean(d.isFounder),
         parents: d.parents || [],
         spouses: Array.from(spouseMap.values()),
-      };
+        children: d.children || [],
+      });
     });
 
     // Propagate isFounder to spouse if either partner has isFounder == true
-    const memberMap = new Map<string, any>();
-    rawMembers.forEach((m: any) => memberMap.set(m._id, m));
-
-    rawMembers.forEach((m: any) => {
+    memberMap.forEach((m) => {
       if (m.isFounder) {
         (m.spouses || []).forEach((sp: any) => {
           const spouseObj = memberMap.get(sp._id);
-          if (spouseObj) {
-            spouseObj.isFounder = true;
-          }
+          if (spouseObj) spouseObj.isFounder = true;
         });
       }
     });

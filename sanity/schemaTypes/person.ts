@@ -1,4 +1,5 @@
 import { defineField, defineType } from "sanity";
+import { ParentsInput } from "../components/ParentsInput";
 
 export const personType = defineType({
   name: "person",
@@ -68,6 +69,9 @@ export const personType = defineType({
       name: "parents",
       title: "Parents",
       type: "array",
+      components: {
+        input: ParentsInput,
+      },
       of: [
         {
           type: "reference",
@@ -75,7 +79,7 @@ export const personType = defineType({
         },
       ],
       validation: (Rule) => Rule.max(2).warning("Typically an individual has up to 2 biological/primary parents."),
-      description: "Select the parents of this individual. (Children will automatically inherit lineage).",
+      description: "Select the parents of this individual. (Selecting one parent will automatically add their spouse).",
     }),
     defineField({
       name: "spouses",
@@ -88,6 +92,18 @@ export const personType = defineType({
         },
       ],
       description: "Select spouse(s). Note: You only need to add this on ONE partner's entry — the app automatically links both partners reciprocally!",
+    }),
+    defineField({
+      name: "children",
+      title: "Children",
+      type: "array",
+      of: [
+        {
+          type: "reference",
+          to: [{ type: "person" }],
+        },
+      ],
+      description: "Select or add children for this individual. (Note: Children can be linked either here or in the child's Parents field — both link reciprocally).",
     }),
     defineField({
       name: "isFounder",

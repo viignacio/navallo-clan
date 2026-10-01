@@ -3,6 +3,8 @@ import { structureTool } from "sanity/structure";
 import { schema } from "./sanity/schemaTypes";
 import { apiVersion, dataset, projectId } from "./sanity/env";
 
+import { createSyncPublishAction, SyncAllClanLinksAction } from "./sanity/actions/syncPublishAction";
+
 export default defineConfig({
   basePath: "/studio",
   name: "navallo_clan_studio",
@@ -15,4 +17,17 @@ export default defineConfig({
       title: "Clan Members",
     }),
   ],
+  document: {
+    actions: (prev, context) => {
+      if (context.schemaType === "person") {
+        const wrapped = prev.map((originalAction) =>
+          originalAction.action === "publish"
+            ? createSyncPublishAction(originalAction)
+            : originalAction
+        );
+        return [...wrapped, SyncAllClanLinksAction];
+      }
+      return prev;
+    },
+  },
 });

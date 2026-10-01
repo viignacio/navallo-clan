@@ -26,13 +26,8 @@ export const PERSON_QUERY = `*[_type == "person"] | order(birthDate asc) {
   },
   bio,
   isFounder,
-  "parents": parents[]->{
-    _id,
-    name
-  },
-  "spouses": array::unique(
-    coalesce(spouses[]->{_id, name}, []) +
-    *[_type == "person" && ^._id in spouses[]._ref]{_id, name}
-  )
+  "parents": coalesce(parents[]->{_id, name}, []),
+  "spouses": coalesce(spouses[]->{_id, name}, []),
+  "children": coalesce(children[]->{_id, name}, [])
 }`;
 

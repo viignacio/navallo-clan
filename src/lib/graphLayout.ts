@@ -111,9 +111,18 @@ export function getImmediateFamily(
   const spouseIds = new Set((person.spouses || []).map((s) => s._id));
   const spouses = members.filter((m) => spouseIds.has(m._id));
 
-  // Children: anyone who has this person as a parent
-  const children = members.filter((m) =>
-    (m.parents || []).some((p) => p._id === personId)
+  // Children: anyone who has this person OR any of their spouses as a parent,
+  // or who is listed in this person's or their spouses' children references
+  const parentUnionIds = new Set([personId, ...spouseIds]);
+  const directChildIds = new Set([
+    ...(person.children || []).map((c) => c._id),
+    ...spouses.flatMap((s) => (s.children || []).map((c) => c._id)),
+  ]);
+
+  const children = members.filter(
+    (m) =>
+      directChildIds.has(m._id) ||
+      (m.parents || []).some((p) => parentUnionIds.has(p._id))
   );
 
   // Siblings: anyone who shares at least one parent (and is not self)
@@ -226,11 +235,15 @@ export function buildClanGraph({
         selectedPersonId === person._id || selectedPersonId === spouse._id;
 
       // Collect children IDs
+      const coupleParentIds = new Set([person._id, spouse._id]);
+      const coupleChildRefs = new Set([
+        ...(person.children || []).map((c) => c._id),
+        ...(spouse.children || []).map((c) => c._id),
+      ]);
       const childIds = members
         .filter((m) =>
-          (m.parents || []).some(
-            (p) => p._id === person._id || p._id === spouse!._id
-          )
+          coupleChildRefs.has(m._id) ||
+          (m.parents || []).some((p) => coupleParentIds.has(p._id))
         )
         .map((m) => m._id);
 
@@ -261,8 +274,12 @@ export function buildClanGraph({
       const isImm = immediateMemberIds.has(person._id);
       const isHigh = selectedPersonId === person._id;
 
+      const singleChildRefs = new Set((person.children || []).map((c) => c._id));
       const childIds = members
-        .filter((m) => (m.parents || []).some((p) => p._id === person._id))
+        .filter((m) =>
+          singleChildRefs.has(m._id) ||
+          (m.parents || []).some((p) => p._id === person._id)
+        )
         .map((m) => m._id);
 
       tempNodes.push({
