@@ -377,7 +377,7 @@ export function buildClanGraph({
           type: "smoothstep",
           animated: isConnectedToSelected,
           style: {
-            stroke: isConnectedToSelected ? "#E5C07B" : "rgba(226, 217, 200, 0.25)",
+            stroke: isConnectedToSelected ? "#E5C07B" : "rgba(226, 217, 200, 0.3)",
             strokeWidth: isConnectedToSelected ? 2.5 : 1.5,
           },
         });
@@ -389,8 +389,8 @@ export function buildClanGraph({
   const g = new dagre.graphlib.Graph();
   g.setGraph({
     rankdir: "TB",
-    nodesep: 80,
-    ranksep: 120,
+    nodesep: 100,
+    ranksep: 150,
     marginx: 80,
     marginy: 80,
   });

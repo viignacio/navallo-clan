@@ -68,7 +68,7 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
             Recommended sequence for creating entries:
           </p>
           <ol className="list-decimal list-inside space-y-1 text-slate-400 pl-1 leading-relaxed">
-            <li>Create the eldest ancestor / founder (e.g. Patriarch or Matriarch).</li>
+            <li>Create the first ancestor or couple.</li>
             <li>Create their spouse and link them via the <strong className="text-slate-300">Spouse</strong> reference field.</li>
             <li>Create children and select their parents in the <strong className="text-slate-300">Parents</strong> reference field.</li>
             <li>Watch them instantly link together in both the Explorer and Canvas!</li>
@@ -104,19 +104,13 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
               <React.Fragment key={ancestor._id}>
                 <button
                   onClick={() => onSelectPerson(ancestor._id)}
-                  className={`text-xs font-medium px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1.5 ${
+                  className={`text-xs font-medium px-2.5 py-1 rounded-lg transition-colors ${
                     isLast
                       ? "bg-[#D4AF37]/20 text-[#E5C07B] border border-[#D4AF37]/30"
                       : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
                   }`}
                 >
-                  {isAncestorFounder && <Crown className="w-3 h-3 text-[#D4AF37]" />}
-                  <span>{ancestor.name.split(" ")[0]}</span>
-                  {isAncestorFounder && (
-                    <span className="text-[10px] text-[#F3CF65] font-mono opacity-90">
-                      (Founder)
-                    </span>
-                  )}
+                  {ancestor.name.split(" ")[0]}
                 </button>
                 {!isLast && (
                   <ChevronRight className="w-3 h-3 text-slate-600 shrink-0" />
@@ -136,25 +130,9 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
         </button>
       </div>
 
-      {/* TOP ANCESTRAL LEVEL */}
-      {isPersonFounder ? (
-        /* CLAN FOUNDERS BANNER - Root Ancestors (No parents section) */
-        <div className="text-center py-7 px-6 rounded-3xl bg-gradient-to-b from-[#D4AF37]/15 via-slate-900/70 to-slate-950/80 border border-[#D4AF37]/40 shadow-2xl shadow-[#D4AF37]/10 max-w-3xl mx-auto space-y-3">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/50 text-[#F3CF65] text-xs font-mono tracking-widest uppercase shadow-sm font-semibold">
-            <Crown className="w-3.5 h-3.5 text-[#D4AF37]" />
-            <span>Clan Founders • Generation 1 (Ancestral Root)</span>
-            <Crown className="w-3.5 h-3.5 text-[#D4AF37]" />
-          </div>
-          <h3 className="text-2xl sm:text-3xl font-serif font-bold text-slate-100 tracking-tight">
-            Origin & Founders of the Navallo Clan
-          </h3>
-          <p className="text-xs sm:text-sm text-slate-300/85 max-w-lg mx-auto leading-relaxed">
-            The root ancestors of the Navallo bloodline. All branches, generations, and descendants in this archive originate from this union.
-          </p>
-        </div>
-      ) : (
-        /* PARENTS GENERATION (Only for non-founders) */
-        <section className="space-y-3">
+      {/* TOP ANCESTRAL LEVEL - Only shown for non-founders who have or need parents */}
+      {!isPersonFounder && (
+        <section className="space-y-4">
           <div className="flex items-center justify-center gap-2">
             <div className="h-px w-16 bg-gradient-to-r from-transparent to-slate-700" />
             <div className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-[#E5C07B] font-mono bg-slate-900/80 px-3 py-1 rounded-full border border-slate-800">
@@ -174,10 +152,10 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
                     roleLabel={parent.gender === "female" ? "Mother" : "Father"}
                     size="md"
                     onClick={() => onSelectPerson(parent._id)}
-                    onFocus={() => onSelectPerson(parent._id)}
                   />
                 ))}
               </div>
+
               {parents.length < 2 && (
                 <div className="flex justify-center">
                   <a
@@ -189,121 +167,94 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
                   </a>
                 </div>
               )}
+
+              {/* Descent Line from Parents down to Child */}
+              <div className="flex justify-center my-4">
+                <div className="w-0.5 h-8 bg-slate-700/80" />
+              </div>
             </div>
           ) : (
-            <div className="text-center py-5 px-6 rounded-2xl bg-slate-900/40 border border-slate-800/80 max-w-md mx-auto space-y-3">
-              <p className="text-xs text-slate-400 font-mono">
-                No parents linked for this member
-              </p>
-              <div>
-                <a
-                  href={`/studio/structure/person;${person._id}`}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-xs font-semibold text-[#E5C07B] border border-[#D4AF37]/30 hover:border-[#D4AF37] transition-all shadow-md group"
-                >
-                  <PlusCircle className="w-4 h-4 text-[#D4AF37] group-hover:rotate-90 transition-transform" />
-                  <span>Link Parents to {person.name.split(" ")[0]} in Studio</span>
-                </a>
+            <div className="space-y-4">
+              <div className="text-center py-5 px-6 rounded-2xl bg-slate-900/40 border border-slate-800/80 max-w-md mx-auto space-y-3">
+                <p className="text-xs text-slate-400 font-mono">
+                  No parents linked for this member
+                </p>
+                <div>
+                  <a
+                    href={`/studio/structure/person;${person._id}`}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-xs font-semibold text-[#E5C07B] border border-[#D4AF37]/30 hover:border-[#D4AF37] transition-all shadow-md group"
+                  >
+                    <PlusCircle className="w-4 h-4 text-[#D4AF37] group-hover:rotate-90 transition-transform" />
+                    <span>Link Parents to {person.name.split(" ")[0]} in Studio</span>
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex justify-center my-3">
+                <div className="w-0.5 h-6 border-l-2 border-dashed border-slate-700" />
               </div>
             </div>
           )}
         </section>
       )}
 
-      {/* Decorative Connector Downward */}
-      <div className="flex justify-center -my-3">
-        <div className="w-0.5 h-8 bg-gradient-to-b from-[#D4AF37]/50 via-slate-700 to-[#D4AF37]/50" />
-      </div>
-
       {/* CENTER STAGE: FOCUSED PERSON & SPOUSE */}
-      <section className="space-y-4">
-        <div className="text-center">
-          <span
-            className={`text-xs uppercase tracking-widest font-mono px-4 py-1.5 rounded-full border shadow-sm inline-flex items-center gap-2 ${
-              isPersonFounder
-                ? "text-[#F3CF65] bg-gradient-to-r from-[#D4AF37]/30 via-[#D4AF37]/20 to-[#D4AF37]/30 border-[#D4AF37]/50 shadow-[#D4AF37]/20 font-bold"
-                : "text-[#D4AF37] bg-[#D4AF37]/10 border-[#D4AF37]/20"
-            }`}
-          >
-            {isPersonFounder ? (
-              <>
-                <Crown className="w-3.5 h-3.5 text-[#D4AF37]" />
-                <span>Clan Founders • Generation 1</span>
-                <Crown className="w-3.5 h-3.5 text-[#D4AF37]" />
-              </>
+      <section className="space-y-6">
+
+        {/* Center Stage Cards */}
+        <div className="max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+            {/* Main Focused Person Card */}
+            <div className="relative">
+              <PersonCard
+                person={person}
+                size="lg"
+                isFocused
+                roleLabel="Focal Member"
+              />
+            </div>
+
+            {/* Spouse or Single Status */}
+            {spouses.length > 0 ? (
+              <div className="relative flex flex-col justify-center">
+                <div className="space-y-4">
+                  {spouses.map((spouse) => (
+                    <div key={spouse._id} className="relative">
+                      <PersonCard
+                        person={spouse}
+                        size="lg"
+                        roleLabel="Spouse / Partner"
+                        onClick={() => onSelectPerson(spouse._id)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
             ) : (
-              <span>Current Focus • Generation {person.generation || "?"}</span>
+              <div className="rounded-2xl border border-dashed border-slate-800 p-8 flex flex-col items-center justify-center text-center bg-slate-900/20">
+                <div className="w-12 h-12 rounded-full bg-slate-800/60 flex items-center justify-center text-slate-500 mb-3">
+                  <Users className="w-6 h-6" />
+                </div>
+                <h5 className="text-sm font-medium text-slate-400">Single Member</h5>
+                <p className="text-xs text-slate-500 mt-1 max-w-xs">
+                  No recorded spouse for this entry.
+                </p>
+                <a
+                  href={`/studio/structure/person;${person._id}`}
+                  className="mt-3.5 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-[#E5C07B] border border-slate-700 hover:border-[#D4AF37]/50 text-xs font-medium transition-colors"
+                >
+                  <PlusCircle className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <span>Link Spouse to {person.name.split(" ")[0]} in Studio</span>
+                </a>
+              </div>
             )}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto items-stretch">
-          {/* Main Focused Person Card */}
-          <div className="relative">
-            <PersonCard
-              person={person}
-              size="lg"
-              isFocused
-              roleLabel={
-                isPersonFounder
-                  ? person.gender === "female"
-                    ? "Clan Matriarch"
-                    : person.gender === "male"
-                    ? "Clan Patriarch"
-                    : "Clan Founder"
-                  : "Focal Member"
-              }
-            />
           </div>
-
-          {/* Spouse or Single Status */}
-          {spouses.length > 0 ? (
-            <div className="relative flex flex-col justify-center">
-              <div className="space-y-4">
-                {spouses.map((spouse) => (
-                  <div key={spouse._id} className="relative">
-                    <PersonCard
-                      person={spouse}
-                      size="lg"
-                      roleLabel={
-                        spouse.isFounder || isPersonFounder
-                          ? spouse.gender === "female"
-                            ? "Clan Matriarch"
-                            : spouse.gender === "male"
-                            ? "Clan Patriarch"
-                            : "Clan Founder"
-                          : "Spouse / Partner"
-                      }
-                      onClick={() => onSelectPerson(spouse._id)}
-                      onFocus={() => onSelectPerson(spouse._id)}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-dashed border-slate-800 p-8 flex flex-col items-center justify-center text-center bg-slate-900/20">
-              <div className="w-12 h-12 rounded-full bg-slate-800/60 flex items-center justify-center text-slate-500 mb-3">
-                <Users className="w-6 h-6" />
-              </div>
-              <h5 className="text-sm font-medium text-slate-400">Single Member</h5>
-              <p className="text-xs text-slate-500 mt-1 max-w-xs">
-                No recorded spouse for this entry.
-              </p>
-              <a
-                href={`/studio/structure/person;${person._id}`}
-                className="mt-3.5 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-[#E5C07B] border border-slate-700 hover:border-[#D4AF37]/50 text-xs font-medium transition-colors"
-              >
-                <PlusCircle className="w-3.5 h-3.5 text-[#D4AF37]" />
-                <span>Link Spouse to {person.name.split(" ")[0]} in Studio</span>
-              </a>
-            </div>
-          )}
         </div>
       </section>
 
-      {/* Decorative Connector Downward */}
-      <div className="flex justify-center -my-3">
-        <div className="w-0.5 h-8 bg-gradient-to-b from-[#D4AF37]/50 via-slate-700 to-[#D4AF37]/50" />
+      {/* Clean connector line down to Children */}
+      <div className="flex justify-center my-6">
+        <div className="w-0.5 h-8 bg-slate-700/80" />
       </div>
 
       {/* Generation Below: CHILDREN */}
@@ -311,9 +262,7 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
         <div className="flex items-center justify-between max-w-5xl mx-auto px-1">
           <div className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-[#E5C07B] font-mono bg-slate-900/80 px-3 py-1 rounded-full border border-slate-800">
             <ArrowDown className="w-3 h-3 text-[#D4AF37]" />
-            {isPersonFounder
-              ? `First Generation Descendants (${children.length})`
-              : `Children & Descendants (${children.length})`}
+            Children & Descendants ({children.length})
           </div>
 
           <a
@@ -321,12 +270,9 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-xs text-[#E5C07B] border border-slate-800 hover:border-[#D4AF37]/50 transition-colors"
           >
             <PlusCircle className="w-3.5 h-3.5 text-[#D4AF37]" />
-            <span>
-              {isPersonFounder ? "+ Add Child of Founders" : "+ Add Child in Studio"}
-            </span>
+            <span>+ Add Child in Studio</span>
           </a>
         </div>
-
         {children.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {children.map((child) => {
@@ -342,7 +288,6 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
                     size="md"
                     roleLabel={grandchildrenCount > 0 ? `Parent of ${grandchildrenCount}` : "Child"}
                     onClick={() => onSelectPerson(child._id)}
-                    onFocus={() => onSelectPerson(child._id)}
                   />
                 </div>
               );
@@ -351,20 +296,14 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
         ) : (
           <div className="text-center py-8 px-6 rounded-2xl bg-slate-900/40 border border-slate-800/80 max-w-md mx-auto space-y-3">
             <p className="text-xs text-slate-400 font-mono">
-              {isPersonFounder
-                ? "No registered children recorded for the Clan Founders yet."
-                : "No registered children recorded for this member."}
+              No registered children recorded for this member.
             </p>
             <a
               href="/studio/structure/person"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#D4AF37]/20 to-[#C29D26]/20 hover:from-[#D4AF37]/30 hover:to-[#C29D26]/30 text-[#E5C07B] border border-[#D4AF37]/40 text-xs font-semibold transition-all shadow-md group"
             >
               <PlusCircle className="w-4 h-4 text-[#D4AF37] group-hover:rotate-90 transition-transform" />
-              <span>
-                {isPersonFounder
-                  ? "Create First Generation Child in Studio"
-                  : `Create Child for ${person.name.split(" ")[0]} in Studio`}
-              </span>
+              <span>Create Child for {person.name.split(" ")[0]} in Studio</span>
             </a>
           </div>
         )}

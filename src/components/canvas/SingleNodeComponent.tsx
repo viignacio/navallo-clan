@@ -28,8 +28,6 @@ export const SingleNodeComponent = memo(({ data }: NodeProps) => {
       className={`relative rounded-2xl p-3.5 transition-all duration-300 backdrop-blur-md select-none cursor-pointer ${
         isHighlighted || isSelected
           ? "bg-slate-900/95 border-2 border-[#D4AF37] ring-4 ring-[#D4AF37]/30 shadow-[0_0_35px_rgba(212,175,55,0.35)] scale-[1.03]"
-          : isFounderSingle
-          ? "bg-slate-900/90 border-2 border-[#D4AF37]/60 shadow-xl shadow-black/40"
           : isImmediateFamily
           ? "bg-slate-900/90 border-2 border-[#E5C07B] shadow-xl shadow-black/50"
           : "bg-slate-900/80 border border-slate-700/80 hover:border-slate-500/80 hover:bg-slate-900/95 shadow-lg shadow-black/30"
@@ -45,14 +43,8 @@ export const SingleNodeComponent = memo(({ data }: NodeProps) => {
 
       {/* Generation Tag */}
       <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-800">
-        <span
-          className={`text-[10px] uppercase font-mono tracking-wider ${
-            isFounderSingle
-              ? "text-[#F3CF65] font-bold flex items-center gap-1"
-              : "text-[#E5C07B]/80"
-          }`}
-        >
-          {isFounderSingle ? "👑 Gen 1 • Clan Founder" : `Generation ${generation} • Individual`}
+        <span className="text-[10px] uppercase font-mono tracking-wider text-[#E5C07B]/80">
+          Generation {generation} • Individual
         </span>
         {nodeData.childIds.length > 0 && (
           <span className="text-[10px] text-slate-400 font-mono">

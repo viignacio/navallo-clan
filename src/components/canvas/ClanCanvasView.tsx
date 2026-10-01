@@ -334,10 +334,10 @@ function ClanCanvasInternal({
                     </span>
                   )}
                 </div>
-                {(selectedPerson.isFounder || selectedPerson.generation === 1) && (
+                {selectedPerson.generation && (
                   <div className="mt-1.5">
-                    <span className="inline-flex items-center gap-1 text-[10px] text-[#F3CF65] font-semibold uppercase tracking-wider font-mono bg-[#D4AF37]/20 px-2 py-0.5 rounded border border-[#D4AF37]/40 shadow-sm">
-                      👑 Gen 1 • Clan Founder
+                    <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider">
+                      Gen {selectedPerson.generation}
                     </span>
                   </div>
                 )}
@@ -397,7 +397,7 @@ function ClanCanvasInternal({
                 </div>
               ) : (
                 <p className="text-[11px] text-slate-500 italic">
-                  Clan Founders / No recorded parents
+                  No recorded parents
                 </p>
               )}
             </div>

@@ -171,12 +171,11 @@ export const personType = defineType({
         .filter(Boolean)
         .join(" – ");
       const statusBadge = isDeceased ? "✝ Deceased" : "Living";
-      const founderTag = isFounder ? "👑 Founder • " : "";
       const displayName = nickname ? `${title} (${nickname})` : title;
 
       return {
         title: displayName || "Unnamed Member",
-        subtitle: `${founderTag}${dates} • ${statusBadge}`,
+        subtitle: `${dates} • ${statusBadge}`,
         media,
       };
     },

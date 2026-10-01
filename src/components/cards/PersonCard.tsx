@@ -11,7 +11,6 @@ interface PersonCardProps {
   size?: "sm" | "md" | "lg";
   roleLabel?: string;
   onClick?: () => void;
-  onFocus?: () => void;
 }
 
 export const PersonCard: React.FC<PersonCardProps> = ({
@@ -21,7 +20,6 @@ export const PersonCard: React.FC<PersonCardProps> = ({
   size = "md",
   roleLabel,
   onClick,
-  onFocus,
 }) => {
   const isSm = size === "sm";
   const isLg = size === "lg";
@@ -37,20 +35,7 @@ export const PersonCard: React.FC<PersonCardProps> = ({
     .filter(Boolean)
     .join(" – ");
 
-  const isFounder = Boolean(person.isFounder || person.generation === 1);
-  const founderTitle =
-    person.gender === "female"
-      ? "Clan Matriarch"
-      : person.gender === "male"
-      ? "Clan Patriarch"
-      : "Clan Founder";
-
-  // When founder, display Clan Matriarch / Patriarch / Founder prominently
-  const displayRole = isFounder
-    ? roleLabel?.includes("Matriarch") || roleLabel?.includes("Patriarch") || roleLabel?.includes("Founder")
-      ? roleLabel
-      : founderTitle
-    : roleLabel;
+  const displayRole = roleLabel;
 
   return (
     <div
@@ -58,23 +43,21 @@ export const PersonCard: React.FC<PersonCardProps> = ({
       className={`group relative rounded-2xl transition-all duration-300 cursor-pointer overflow-hidden border ${
         isFocused
           ? "bg-slate-900/90 border-[#D4AF37] ring-2 ring-[#D4AF37]/50 shadow-[0_0_30px_rgba(212,175,55,0.25)]"
-          : isFounder
-          ? "bg-slate-900/80 border-[#D4AF37]/60 hover:border-[#D4AF37] shadow-lg shadow-[#D4AF37]/10"
           : isSelected
           ? "bg-slate-900/80 border-[#E5C07B] shadow-lg shadow-black/40"
           : "bg-slate-900/60 border-slate-800 hover:border-slate-700 hover:bg-slate-900/80 shadow-md shadow-black/20"
       } ${isSm ? "p-3" : isLg ? "p-6" : "p-4"}`}
     >
-      {/* Role tag / Founder badge */}
+      {/* Role tag */}
       {displayRole && (
         <div
           className={`absolute top-2 right-2 px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wider uppercase border shadow-sm ${
-            isFounder
-              ? "bg-gradient-to-r from-[#D4AF37]/30 to-[#9A7B1C]/30 text-[#F3CF65] border-[#D4AF37]/60 shadow-[#D4AF37]/20"
+            isFocused
+              ? "bg-[#D4AF37]/20 text-[#F3CF65] border-[#D4AF37]/40"
               : "bg-[#D4AF37]/10 text-[#E5C07B] border-[#D4AF37]/20"
           }`}
         >
-          {isFounder ? `👑 ${displayRole}` : displayRole}
+          {displayRole}
         </div>
       )}
 
@@ -141,7 +124,7 @@ export const PersonCard: React.FC<PersonCardProps> = ({
           {/* Dates & Status */}
           <div className="flex items-center gap-2 mt-1">
             <p className="text-xs text-slate-400 font-mono">
-              {datesText ? `${datesText} • ${isFounder ? founderTitle : "Member"}` : (isFounder ? founderTitle : "Family Member")}
+              {datesText || "Family Member"}
             </p>
             {person.isDeceased ? (
               <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-slate-400 bg-slate-800/80 px-1.5 py-0.2 rounded border border-slate-700/60">
@@ -162,14 +145,10 @@ export const PersonCard: React.FC<PersonCardProps> = ({
             </p>
           )}
 
-          {/* Generation & Founder Tag */}
+          {/* Generation Tag */}
           {!isSm && (
             <div className="mt-2.5 flex items-center gap-2 flex-wrap">
-              {isFounder ? (
-                <span className="inline-flex items-center gap-1 text-[10px] text-[#F3CF65] font-semibold uppercase tracking-wider font-mono bg-[#D4AF37]/20 px-2 py-0.5 rounded border border-[#D4AF37]/40 shadow-sm">
-                  👑 Gen 1 • Clan Founder
-                </span>
-              ) : person.generation ? (
+              {person.generation ? (
                 <span className="text-[10px] text-slate-400 uppercase tracking-widest font-mono">
                   Gen {person.generation}
                 </span>
@@ -183,22 +162,6 @@ export const PersonCard: React.FC<PersonCardProps> = ({
           )}
         </div>
       </div>
-
-      {/* Focus Action Button if in focused view */}
-      {onFocus && (
-        <div className="mt-3 pt-2.5 border-t border-slate-800/70 flex justify-end">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onFocus();
-            }}
-            className="text-xs flex items-center gap-1 text-[#E5C07B] hover:text-[#F3CF65] transition-colors font-medium px-2 py-1 rounded-lg hover:bg-[#D4AF37]/10"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            Focus Family Branch
-          </button>
-        </div>
-      )}
     </div>
   );
 };
