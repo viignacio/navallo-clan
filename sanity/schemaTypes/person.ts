@@ -1,6 +1,4 @@
 import { defineField, defineType } from "sanity";
-import { SpousesInput } from "../components/SpousesInput";
-import { ChildrenView } from "../components/ChildrenView";
 
 export const personType = defineType({
   name: "person",
@@ -83,9 +81,6 @@ export const personType = defineType({
       name: "spouses",
       title: "Spouses / Partners",
       type: "array",
-      components: {
-        input: SpousesInput,
-      },
       of: [
         {
           type: "reference",
@@ -145,15 +140,6 @@ export const personType = defineType({
 
           return `Only 1 pair of clan founders is permitted. Found existing founders: ${otherFounders.map((f) => f.name).join(", ")}.`;
         }),
-    }),
-    defineField({
-      name: "childrenOverview",
-      title: "Children & Descendants",
-      type: "string",
-      components: {
-        input: ChildrenView,
-      },
-      readOnly: true,
     }),
   ],
   preview: {

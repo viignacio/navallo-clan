@@ -15,7 +15,6 @@ import {
   Shield,
   Layers,
   RefreshCw,
-  Database,
 } from "lucide-react";
 
 interface NavbarProps {
@@ -26,8 +25,6 @@ interface NavbarProps {
   hasSanityConfigured: boolean;
   isRefreshing?: boolean;
   onRefresh?: () => void;
-  dataSource?: "sanity" | "sample";
-  onToggleDataSource?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -38,8 +35,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   hasSanityConfigured,
   isRefreshing = false,
   onRefresh,
-  dataSource = "sanity",
-  onToggleDataSource,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -82,7 +77,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               {hasSanityConfigured && (
                 <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-950/80 text-emerald-400 border border-emerald-800/60 font-mono">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  {dataSource === "sanity" ? "Sanity Live" : "Sample Mode"}
+                  Sanity Live
                 </span>
               )}
             </div>
@@ -160,18 +155,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               <RefreshCw
                 className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-[#D4AF37]" : ""}`}
               />
-            </button>
-          )}
-
-          {/* Data source switch (Sanity vs Sample fallback preview) */}
-          {hasSanityConfigured && onToggleDataSource && (
-            <button
-              onClick={onToggleDataSource}
-              title="Toggle between Live Sanity and Sample Demo dataset"
-              className="hidden lg:flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-900/60 hover:bg-slate-800 border border-slate-800 text-[11px] font-mono text-slate-400 hover:text-slate-200 transition-colors"
-            >
-              <Database className="w-3 h-3 text-[#D4AF37]" />
-              <span>{dataSource === "sanity" ? "Use Sample" : "Use Sanity"}</span>
             </button>
           )}
 

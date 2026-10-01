@@ -6,7 +6,6 @@ export interface BuildGraphParams {
   members: Person[];
   selectedPersonId: string | null;
   onSelectPerson: (personId: string) => void;
-  onFocusPerson: (personId: string) => void;
 }
 
 export interface ClanGraphResult {
@@ -20,39 +19,17 @@ export function findPersonById(members: Person[], id: string): Person | undefine
 }
 
 /**
- * Automatically computes dynamic generation numbers and ensures
- * spouses of founders are also recognized as founders.
+ * Computes dynamic generation numbers (Gen 1 = Founders / root ancestors, Gen 2 = Children, etc.)
  */
 export function enrichClanMembers(rawMembers: Person[]): Person[] {
   if (rawMembers.length === 0) return [];
 
-  // Clone members
   const memberMap = new Map<string, Person>();
   rawMembers.forEach((m) => {
     memberMap.set(m._id, { ...m, isFounder: Boolean(m.isFounder) });
   });
 
-  // 1. If Person A is founder, their spouse Person B is also marked founder
-  rawMembers.forEach((m) => {
-    if (m.isFounder) {
-      // Find spouses bidirectionally
-      const spouses = rawMembers.filter((other) => {
-        if (other._id === m._id) return false;
-        const direct = (m.spouses || []).some((s) => s._id === other._id);
-        const reverse = (other.spouses || []).some((s) => s._id === m._id);
-        return direct || reverse;
-      });
-
-      spouses.forEach((sp) => {
-        const enrichedSpouse = memberMap.get(sp._id);
-        if (enrichedSpouse) {
-          enrichedSpouse.isFounder = true;
-        }
-      });
-    }
-  });
-
-  // 2. Dynamic generation computation (Gen 1 = Founders / root ancestors)
+  // Dynamic generation computation (Gen 1 = Founders / root ancestors)
   const genMap = new Map<string, number>();
 
   // Determine Gen 1: either explicitly marked founders or root nodes without parents
@@ -109,7 +86,6 @@ export function enrichClanMembers(rawMembers: Person[]): Person[] {
     }
   });
 
-  // Return enriched members
   return Array.from(memberMap.values()).map((m) => ({
     ...m,
     generation: genMap.get(m._id) || 1,
@@ -131,17 +107,9 @@ export function getImmediateFamily(
   const parentIds = new Set((person.parents || []).map((p) => p._id));
   const parents = members.filter((m) => parentIds.has(m._id));
 
-  // Spouses: bidirectional lookup (this person lists them OR they list this person OR they share children)
-  const spouses = members.filter((m) => {
-    if (m._id === personId) return false;
-    const isDirectSpouse = (person.spouses || []).some((s) => s._id === m._id);
-    const isReverseSpouse = (m.spouses || []).some((s) => s._id === personId);
-    const sharesChild = members.some((child) => {
-      const childParents = (child.parents || []).map((p) => p._id);
-      return childParents.includes(personId) && childParents.includes(m._id);
-    });
-    return isDirectSpouse || isReverseSpouse || sharesChild;
-  });
+  // Spouses: direct lookup from normalized spouses array
+  const spouseIds = new Set((person.spouses || []).map((s) => s._id));
+  const spouses = members.filter((m) => spouseIds.has(m._id));
 
   // Children: anyone who has this person as a parent
   const children = members.filter((m) =>
@@ -195,7 +163,6 @@ export function buildClanGraph({
   members: rawMembers,
   selectedPersonId,
   onSelectPerson,
-  onFocusPerson,
 }: BuildGraphParams): ClanGraphResult {
   const members = enrichClanMembers(rawMembers);
   const personToNodeMap = new Map<string, string>();
@@ -231,37 +198,13 @@ export function buildClanGraph({
   for (const person of members) {
     if (processedPersonIds.has(person._id)) continue;
 
-    // Check for a spouse that exists in the clan dataset (bidirectional & co-parent)
+    // Check for a spouse that exists in the clan dataset
     let spouse: Person | undefined;
     if (person.spouses && person.spouses.length > 0) {
       for (const spRef of person.spouses) {
         if (!processedPersonIds.has(spRef._id)) {
           spouse = findPersonById(members, spRef._id);
           if (spouse) break;
-        }
-      }
-    }
-
-    // Reverse check: did another member list this person as their spouse?
-    if (!spouse) {
-      spouse = members.find(
-        (m) =>
-          !processedPersonIds.has(m._id) &&
-          m._id !== person._id &&
-          (m.spouses || []).some((s) => s._id === person._id)
-      );
-    }
-
-    // Co-parent check: do they share children together?
-    if (!spouse) {
-      for (const child of members) {
-        const pIds = (child.parents || []).map((p) => p._id);
-        if (pIds.includes(person._id) && pIds.length >= 2) {
-          const otherParentId = pIds.find((id) => id !== person._id);
-          if (otherParentId && !processedPersonIds.has(otherParentId)) {
-            spouse = findPersonById(members, otherParentId);
-            if (spouse) break;
-          }
         }
       }
     }
@@ -307,7 +250,6 @@ export function buildClanGraph({
           isHighlighted: isHigh,
           selectedPersonId,
           onSelectPerson,
-          onFocusPerson,
         },
       });
     } else {
@@ -338,7 +280,6 @@ export function buildClanGraph({
           isHighlighted: isHigh,
           selectedPersonId,
           onSelectPerson,
-          onFocusPerson,
         },
       });
     }

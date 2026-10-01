@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Person } from "../types/clan";
-import { MOCK_CLAN_MEMBERS } from "../data/mockClanData";
 import { Navbar } from "../components/Navbar";
 import { FocusedFamilyExplorer } from "../components/explorer/FocusedFamilyExplorer";
 import { ClanCanvasView } from "../components/canvas/ClanCanvasView";
@@ -24,21 +23,14 @@ import {
 
 export default function ClanTreeHomePage() {
   const [sanityMembers, setSanityMembers] = useState<Person[]>([]);
-  const [dataSource, setDataSource] = useState<"sanity" | "sample">(
-    hasSanityCredentials ? "sanity" : "sample"
-  );
   const [selectedPersonId, setSelectedPersonId] = useState<string>("");
   const [viewMode, setViewMode] = useState<"explorer" | "canvas">("explorer");
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
-  const [hasLoadedOnce, setHasLoadedOnce] = useState<boolean>(false);
 
-  // Active members based on selected data source, enriched with computed generations
-  const members = React.useMemo(
-    () =>
-      enrichClanMembers(
-        dataSource === "sanity" ? sanityMembers : MOCK_CLAN_MEMBERS
-      ),
-    [dataSource, sanityMembers]
+  // Active members from Sanity, enriched with computed generations
+  const members = useMemo(
+    () => enrichClanMembers(sanityMembers),
+    [sanityMembers]
   );
 
   // Set default selected person whenever members change
@@ -67,7 +59,6 @@ export default function ClanTreeHomePage() {
       console.error("Failed to fetch clan data from API:", err);
     } finally {
       if (!silent) setIsRefreshing(false);
-      setHasLoadedOnce(true);
     }
   }, []);
 
@@ -117,10 +108,6 @@ export default function ClanTreeHomePage() {
         hasSanityConfigured={hasSanityCredentials}
         isRefreshing={isRefreshing}
         onRefresh={() => fetchSanityData(false)}
-        dataSource={dataSource}
-        onToggleDataSource={() =>
-          setDataSource((prev) => (prev === "sanity" ? "sample" : "sanity"))
-        }
       />
 
       {/* Main Content Area */}

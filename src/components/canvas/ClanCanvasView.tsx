@@ -76,11 +76,8 @@ function ClanCanvasInternal({
           onSelectPerson(id);
           setIsInspectorOpen(true);
         },
-        onFocusPerson: (id) => {
-          onDeepFocusInExplorer(id);
-        },
       }),
-    [members, selectedPersonId, onSelectPerson, onDeepFocusInExplorer]
+    [members, selectedPersonId, onSelectPerson]
   );
 
   // Pan and center camera to selected node when selectedPersonId changes

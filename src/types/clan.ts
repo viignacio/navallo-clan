@@ -25,7 +25,6 @@ export interface CoupleNodeData extends Record<string, unknown> {
   isImmediateFamily?: boolean;
   selectedPersonId?: string | null;
   onSelectPerson: (personId: string) => void;
-  onFocusPerson: (personId: string) => void;
 }
 
 export interface SingleNodeData extends Record<string, unknown> {
@@ -36,7 +35,6 @@ export interface SingleNodeData extends Record<string, unknown> {
   isImmediateFamily?: boolean;
   selectedPersonId?: string | null;
   onSelectPerson: (personId: string) => void;
-  onFocusPerson: (personId: string) => void;
 }
 
 export interface ImmediateFamily {
