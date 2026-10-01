@@ -12,7 +12,12 @@ import {
   Node,
 } from "@xyflow/react";
 import { Person, ImmediateFamily } from "../../types/clan";
-import { buildClanGraph, getImmediateFamily, findPersonById } from "../../lib/graphLayout";
+import {
+  buildClanGraph,
+  getImmediateFamily,
+  findPersonById,
+  getLineageMemberIds,
+} from "../../lib/graphLayout";
 import { CoupleNodeComponent } from "./CoupleNodeComponent";
 import { SingleNodeComponent } from "./SingleNodeComponent";
 import {
@@ -25,7 +30,6 @@ import {
   ChevronRight,
   Cross,
   Sparkles,
-  Info,
   X,
 } from "lucide-react";
 
@@ -49,7 +53,7 @@ function ClanCanvasInternal({
   onExitCanvas,
   onDeepFocusInExplorer,
 }: ClanCanvasViewProps) {
-  const { fitView, setCenter, getNodes } = useReactFlow();
+  const { fitView } = useReactFlow();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isInspectorOpen, setIsInspectorOpen] = useState(true);
@@ -80,29 +84,57 @@ function ClanCanvasInternal({
     [members, selectedPersonId, onSelectPerson]
   );
 
-  // Pan and center camera to selected node when selectedPersonId changes
+  // Smoothly frames the entire lineage of the selected person
+  const zoomToLineage = useCallback(
+    (personId: string, duration = 650) => {
+      const lineageIds = getLineageMemberIds(personId, members);
+      const lineageNodeIds = new Set<string>();
+      lineageIds.forEach((mId) => {
+        const nId = personToNodeMap.get(mId);
+        if (nId) lineageNodeIds.add(nId);
+      });
+
+      if (lineageNodeIds.size > 0) {
+        const targetNodes = Array.from(lineageNodeIds).map((id) => ({ id }));
+        fitView({
+          nodes: targetNodes,
+          padding: 0.28,
+          duration,
+          maxZoom: 1.05,
+        });
+      } else {
+        fitView({ padding: 0.2, duration, maxZoom: 1.05 });
+      }
+    },
+    [members, personToNodeMap, fitView]
+  );
+
+  // Guard camera framing so zooming/panning is preserved and only new selections trigger initial zoom
+  const lastCenteredPersonIdRef = React.useRef<string | null>(null);
+
   useEffect(() => {
-    if (!selectedPersonId) return;
-    const targetNodeId = personToNodeMap.get(selectedPersonId);
-    if (!targetNodeId) return;
+    if (!selectedPersonId || selectedPersonId === lastCenteredPersonIdRef.current) return;
+    lastCenteredPersonIdRef.current = selectedPersonId;
 
-    const currentNodes = getNodes();
-    const targetNode = currentNodes.find((n) => n.id === targetNodeId);
-
-    if (targetNode) {
-      const x = targetNode.position.x + (targetNode.type === "coupleNode" ? 190 : 125);
-      const y = targetNode.position.y + 95;
-      setCenter(x, y, { zoom: 1.1, duration: 600 });
-    }
-  }, [selectedPersonId, personToNodeMap, getNodes, setCenter]);
-
-  // Initial fit view
-  useEffect(() => {
     const timer = setTimeout(() => {
-      fitView({ padding: 0.2, duration: 800 });
-    }, 150);
+      zoomToLineage(selectedPersonId, 650);
+    }, 60);
+
     return () => clearTimeout(timer);
-  }, [fitView]);
+  }, [selectedPersonId, zoomToLineage]);
+
+  // Initial fit view on mount if no person is selected
+  const hasInitialFitRef = React.useRef(false);
+  useEffect(() => {
+    if (hasInitialFitRef.current) return;
+    hasInitialFitRef.current = true;
+    if (!selectedPersonId) {
+      const timer = setTimeout(() => {
+        fitView({ padding: 0.2, duration: 800 });
+      }, 180);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedPersonId, fitView]);
 
   // Search filter
   const filteredMembers = useMemo(() => {
@@ -205,10 +237,22 @@ function ClanCanvasInternal({
             <Map className="w-4 h-4" />
           </button>
 
-          {/* Fit View Button */}
+          {/* Fit Lineage Button (if someone is selected) */}
+          {selectedPersonId && (
+            <button
+              onClick={() => zoomToLineage(selectedPersonId, 600)}
+              title="Frame Selected Lineage"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 text-[#E5C07B] border border-[#D4AF37]/40 hover:border-[#D4AF37] shadow-lg backdrop-blur-md transition-all text-xs font-medium"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span className="hidden sm:inline">Fit Lineage</span>
+            </button>
+          )}
+
+          {/* Fit View / Entire Clan Button */}
           <button
             onClick={() => fitView({ padding: 0.2, duration: 600 })}
-            title="Reset / Fit View"
+            title="Reset to Entire Clan Tree"
             className="p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-slate-700 shadow-lg backdrop-blur-md transition-all"
           >
             <Maximize2 className="w-4 h-4 text-[#E5C07B]" />
@@ -216,45 +260,52 @@ function ClanCanvasInternal({
         </div>
       </div>
 
-      {/* React Flow Infinite Canvas */}
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        fitView
-        minZoom={0.15}
-        maxZoom={2.5}
-        defaultEdgeOptions={{
-          type: "smoothstep",
-        }}
-        proOptions={{ hideAttribution: true }}
+      {/* React Flow Infinite Canvas with responsive right boundary to prevent overlapping the inspector */}
+      <div
+        className={`h-full transition-all duration-300 relative ${
+          selectedPerson && immediateFamily && isInspectorOpen
+            ? "w-full md:w-[calc(100%-360px)]"
+            : "w-full"
+        }`}
       >
-        <Background
-          variant={BackgroundVariant.Dots}
-          gap={28}
-          size={1.5}
-          color="rgba(212, 175, 55, 0.2)"
-        />
-        {/* Navigation Controls docked cleanly on bottom-left */}
-        <Controls
-          showInteractive={false}
-          position="bottom-left"
-          className="!bottom-6 !left-6 !bg-slate-900/90 !border-slate-800 !rounded-xl"
-        />
-        {showMiniMap && (
-          <MiniMap
-            position="bottom-left"
-            nodeColor={(node: Node) => {
-              if (node.type === "coupleNode") return "#D4AF37";
-              return "#4A5568";
-            }}
-            maskColor="rgba(11, 15, 23, 0.75)"
-            className="!bottom-6 !left-20 !w-44 !h-28"
-            zoomable
-            pannable
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          nodeTypes={nodeTypes}
+          minZoom={0.15}
+          maxZoom={2.5}
+          defaultEdgeOptions={{
+            type: "smoothstep",
+          }}
+          proOptions={{ hideAttribution: true }}
+        >
+          <Background
+            variant={BackgroundVariant.Dots}
+            gap={28}
+            size={1.5}
+            color="rgba(212, 175, 55, 0.2)"
           />
-        )}
-      </ReactFlow>
+          {/* Navigation Controls docked cleanly on bottom-left */}
+          <Controls
+            showInteractive={false}
+            position="bottom-left"
+            className="!bottom-6 !left-6 !bg-slate-900/90 !border-slate-800 !rounded-xl"
+          />
+          {showMiniMap && (
+            <MiniMap
+              position="bottom-left"
+              nodeColor={(node: Node) => {
+                if (node.type === "coupleNode") return "#D4AF37";
+                return "#4A5568";
+              }}
+              maskColor="rgba(11, 15, 23, 0.75)"
+              className="!bottom-6 !left-20 !w-44 !h-28"
+              zoomable
+              pannable
+            />
+          )}
+        </ReactFlow>
+      </div>
 
       {/* Re-open Family Focus Pill when panel is closed */}
       {selectedPerson && !isInspectorOpen && (

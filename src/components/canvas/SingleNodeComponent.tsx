@@ -11,13 +11,13 @@ export const SingleNodeComponent = memo(({ data }: NodeProps) => {
     person,
     generation,
     isImmediateFamily,
+    isLineage,
     isHighlighted,
     selectedPersonId,
     onSelectPerson,
   } = nodeData;
 
   const isSelected = selectedPersonId === person._id;
-  const isFounderSingle = Boolean(person.isFounder || generation === 1);
 
   return (
     <div
@@ -27,7 +27,9 @@ export const SingleNodeComponent = memo(({ data }: NodeProps) => {
       }}
       className={`relative rounded-2xl p-3.5 transition-all duration-300 backdrop-blur-md select-none cursor-pointer ${
         isHighlighted || isSelected
-          ? "bg-slate-900/95 border-2 border-[#D4AF37] ring-4 ring-[#D4AF37]/30 shadow-[0_0_35px_rgba(212,175,55,0.35)] scale-[1.03]"
+          ? "bg-slate-900/95 border-2 border-[#D4AF37] ring-4 ring-[#D4AF37]/40 shadow-[0_0_35px_rgba(212,175,55,0.4)] scale-[1.03] z-20"
+          : isLineage
+          ? "bg-slate-900/95 border-2 border-[#E5C07B] ring-2 ring-[#E5C07B]/30 shadow-[0_0_25px_rgba(229,192,123,0.3)] z-10 scale-[1.01]"
           : isImmediateFamily
           ? "bg-slate-900/90 border-2 border-[#E5C07B] shadow-xl shadow-black/50"
           : "bg-slate-900/80 border border-slate-700/80 hover:border-slate-500/80 hover:bg-slate-900/95 shadow-lg shadow-black/30"
@@ -38,13 +40,23 @@ export const SingleNodeComponent = memo(({ data }: NodeProps) => {
       <Handle
         type="target"
         position={Position.Top}
-        className="!w-2.5 !h-2.5 !bg-[#D4AF37] !border-2 !border-slate-900"
+        className={`!w-2.5 !h-2.5 !border-2 !border-slate-900 transition-colors ${
+          isLineage || isHighlighted || isSelected ? "!bg-[#D4AF37]" : "!bg-slate-600"
+        }`}
       />
 
       {/* Generation Tag */}
       <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-800">
-        <span className="text-[10px] uppercase font-mono tracking-wider text-[#E5C07B]/80">
+        <span
+          className={`text-[10px] uppercase font-mono tracking-wider transition-colors ${
+            isHighlighted || isSelected || isLineage
+              ? "text-[#E5C07B] font-semibold"
+              : "text-slate-400"
+          }`}
+        >
           Generation {generation} • Individual
+          {(isHighlighted || isSelected) && " • Selected"}
+          {!(isHighlighted || isSelected) && isLineage && " • Lineage"}
         </span>
         {nodeData.childIds.length > 0 && (
           <span className="text-[10px] text-slate-400 font-mono">
@@ -59,6 +71,8 @@ export const SingleNodeComponent = memo(({ data }: NodeProps) => {
             className={`w-12 h-12 rounded-xl overflow-hidden border ${
               person.isDeceased
                 ? "border-slate-700 grayscale contrast-105"
+                : isLineage || isHighlighted || isSelected
+                ? "border-[#D4AF37]/70"
                 : "border-[#D4AF37]/40"
             } bg-slate-800 flex items-center justify-center`}
           >
@@ -98,7 +112,9 @@ export const SingleNodeComponent = memo(({ data }: NodeProps) => {
       <Handle
         type="source"
         position={Position.Bottom}
-        className="!w-2.5 !h-2.5 !bg-[#D4AF37] !border-2 !border-slate-900"
+        className={`!w-2.5 !h-2.5 !border-2 !border-slate-900 transition-colors ${
+          isLineage || isHighlighted || isSelected ? "!bg-[#D4AF37]" : "!bg-slate-600"
+        }`}
       />
     </div>
   );

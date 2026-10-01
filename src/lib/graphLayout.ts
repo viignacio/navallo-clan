@@ -166,6 +166,90 @@ export function getAncestryPath(
 }
 
 /**
+ * Traces the complete lineage (ancestor bloodline path to founders + all descendants)
+ * for a member or couple.
+ */
+export function getLineageMemberIds(
+  personId: string,
+  members: Person[]
+): Set<string> {
+  const lineageMemberIds = new Set<string>();
+  const person = findPersonById(members, personId);
+  if (!person) return lineageMemberIds;
+
+  // Add person and their spouses
+  lineageMemberIds.add(person._id);
+  (person.spouses || []).forEach((s) => lineageMemberIds.add(s._id));
+
+  // Determine starting bloodline person (if person married in and has no parents, trace spouse)
+  const bloodlinePerson =
+    (!person.parents || person.parents.length === 0) &&
+    person.spouses &&
+    person.spouses.length > 0 &&
+    person.spouses.some((s) => {
+      const sp = findPersonById(members, s._id);
+      return sp?.parents && sp.parents.length > 0;
+    })
+      ? findPersonById(members, person.spouses[0]._id) || person
+      : person;
+
+  // Trace UP to founders (Ancestors)
+  const ancestryQueue: Person[] = [bloodlinePerson];
+  const visitedAncestors = new Set<string>();
+
+  while (ancestryQueue.length > 0) {
+    const current = ancestryQueue.shift()!;
+    if (visitedAncestors.has(current._id)) continue;
+    visitedAncestors.add(current._id);
+
+    lineageMemberIds.add(current._id);
+    (current.spouses || []).forEach((s) => lineageMemberIds.add(s._id));
+
+    // Add parents to queue
+    (current.parents || []).forEach((pRef) => {
+      const parent = findPersonById(members, pRef._id);
+      if (parent) {
+        ancestryQueue.push(parent);
+      }
+    });
+  }
+
+  // Trace DOWN to all descendants (children, grandchildren, great-grandchildren)
+  const descendantParentQueue: string[] = [
+    person._id,
+    ...(person.spouses || []).map((s) => s._id),
+  ];
+  const visitedDescendants = new Set<string>(descendantParentQueue);
+
+  while (descendantParentQueue.length > 0) {
+    const parentId = descendantParentQueue.shift()!;
+    const parentPerson = findPersonById(members, parentId);
+    const directChildIds = new Set((parentPerson?.children || []).map((c) => c._id));
+
+    members.forEach((m) => {
+      const isChild =
+        directChildIds.has(m._id) ||
+        (m.parents || []).some((p) => p._id === parentId);
+
+      if (isChild && !visitedDescendants.has(m._id)) {
+        visitedDescendants.add(m._id);
+        lineageMemberIds.add(m._id);
+        descendantParentQueue.push(m._id);
+
+        // Include spouses of descendants so couples stay together
+        (m.spouses || []).forEach((s) => {
+          lineageMemberIds.add(s._id);
+          visitedDescendants.add(s._id);
+          descendantParentQueue.push(s._id);
+        });
+      }
+    });
+  }
+
+  return lineageMemberIds;
+}
+
+/**
  * Builds the visual canvas graph (Nodes & Edges) with Dagre layout
  */
 export function buildClanGraph({
@@ -177,7 +261,7 @@ export function buildClanGraph({
   const personToNodeMap = new Map<string, string>();
   const processedPersonIds = new Set<string>();
 
-  // Determine immediate family IDs for visual highlighting
+  // Determine immediate family IDs & entire lineage IDs for visual highlighting
   const immediateFamily = selectedPersonId
     ? getImmediateFamily(selectedPersonId, members)
     : null;
@@ -189,6 +273,10 @@ export function buildClanGraph({
     immediateFamily.spouses.forEach((s) => immediateMemberIds.add(s._id));
     immediateFamily.children.forEach((c) => immediateMemberIds.add(c._id));
   }
+
+  const lineageMemberIds = selectedPersonId
+    ? getLineageMemberIds(selectedPersonId, members)
+    : new Set<string>();
 
   // Raw temporary node descriptors before Dagre positioning
   interface TempNode {
@@ -228,6 +316,9 @@ export function buildClanGraph({
       processedPersonIds.add(person._id);
       processedPersonIds.add(spouse._id);
 
+      const isLineage =
+        lineageMemberIds.has(person._id) ||
+        lineageMemberIds.has(spouse._id);
       const isImm =
         immediateMemberIds.has(person._id) ||
         immediateMemberIds.has(spouse._id);
@@ -260,6 +351,7 @@ export function buildClanGraph({
           generation: gen,
           childIds,
           isImmediateFamily: isImm,
+          isLineage,
           isHighlighted: isHigh,
           selectedPersonId,
           onSelectPerson,
@@ -271,6 +363,7 @@ export function buildClanGraph({
       personToNodeMap.set(person._id, nodeId);
       processedPersonIds.add(person._id);
 
+      const isLineage = lineageMemberIds.has(person._id);
       const isImm = immediateMemberIds.has(person._id);
       const isHigh = selectedPersonId === person._id;
 
@@ -294,6 +387,7 @@ export function buildClanGraph({
           generation: gen,
           childIds,
           isImmediateFamily: isImm,
+          isLineage,
           isHighlighted: isHigh,
           selectedPersonId,
           onSelectPerson,
@@ -321,22 +415,24 @@ export function buildClanGraph({
       if (!edgeSet.has(edgeKey)) {
         edgeSet.add(edgeKey);
 
-        const isConnectedToSelected =
-          Boolean(selectedPersonId) &&
-          ((immediateMemberIds.has(person._id) &&
-            immediateMemberIds.has(parentRef._id)) ||
-            person._id === selectedPersonId ||
-            parentRef._id === selectedPersonId);
+        const isParentLineage = lineageMemberIds.has(parentRef._id);
+        const isChildLineage = lineageMemberIds.has(person._id);
+        const isLineageEdge =
+          Boolean(selectedPersonId) && isParentLineage && isChildLineage;
 
         edges.push({
           id: edgeKey,
           source: parentNodeId,
           target: childNodeId,
           type: "smoothstep",
-          animated: isConnectedToSelected,
+          animated: isLineageEdge,
+          zIndex: isLineageEdge ? 10 : 0,
           style: {
-            stroke: isConnectedToSelected ? "#E5C07B" : "rgba(226, 217, 200, 0.3)",
-            strokeWidth: isConnectedToSelected ? 2.5 : 1.5,
+            stroke: isLineageEdge
+              ? "#D4AF37"
+              : "rgba(226, 217, 200, 0.35)",
+            strokeWidth: isLineageEdge ? 3 : 1.5,
+            opacity: isLineageEdge ? 1 : 0.7,
           },
         });
       }

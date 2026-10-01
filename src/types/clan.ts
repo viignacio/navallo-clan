@@ -24,6 +24,7 @@ export interface CoupleNodeData extends Record<string, unknown> {
   childIds: string[];
   isHighlighted?: boolean;
   isImmediateFamily?: boolean;
+  isLineage?: boolean;
   selectedPersonId?: string | null;
   onSelectPerson: (personId: string) => void;
 }
@@ -34,6 +35,7 @@ export interface SingleNodeData extends Record<string, unknown> {
   childIds: string[];
   isHighlighted?: boolean;
   isImmediateFamily?: boolean;
+  isLineage?: boolean;
   selectedPersonId?: string | null;
   onSelectPerson: (personId: string) => void;
 }
