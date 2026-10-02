@@ -111,18 +111,13 @@ export function getImmediateFamily(
   const spouseIds = new Set((person.spouses || []).map((s) => s._id));
   const spouses = members.filter((m) => spouseIds.has(m._id));
 
-  // Children: anyone who has this person OR any of their spouses as a parent,
-  // or who is listed in this person's or their spouses' children references
-  const parentUnionIds = new Set([personId, ...spouseIds]);
-  const directChildIds = new Set([
-    ...(person.children || []).map((c) => c._id),
-    ...spouses.flatMap((s) => (s.children || []).map((c) => c._id)),
-  ]);
-
+  // Children: strictly anyone who has this person as a parent,
+  // or who is listed in this person's children references
+  const directChildIds = new Set((person.children || []).map((c) => c._id));
   const children = members.filter(
     (m) =>
       directChildIds.has(m._id) ||
-      (m.parents || []).some((p) => parentUnionIds.has(p._id))
+      (m.parents || []).some((p) => p._id === personId)
   );
 
   // Siblings: anyone who shares at least one parent (and is not self)
@@ -215,10 +210,7 @@ export function getLineageMemberIds(
   }
 
   // Trace DOWN to all descendants (children, grandchildren, great-grandchildren)
-  const descendantParentQueue: string[] = [
-    person._id,
-    ...(person.spouses || []).map((s) => s._id),
-  ];
+  const descendantParentQueue: string[] = [person._id];
   const visitedDescendants = new Set<string>(descendantParentQueue);
 
   while (descendantParentQueue.length > 0) {
@@ -406,16 +398,38 @@ export function buildClanGraph({
     const childNodeId = personToNodeMap.get(person._id);
     if (!childNodeId) continue;
 
-    // Find parent node(s)
+    // Group this child's parents by their parentNodeId
+    const nodeToParents = new Map<string, string[]>();
     for (const parentRef of person.parents) {
       const parentNodeId = personToNodeMap.get(parentRef._id);
       if (!parentNodeId || parentNodeId === childNodeId) continue;
+      if (!nodeToParents.has(parentNodeId)) {
+        nodeToParents.set(parentNodeId, []);
+      }
+      nodeToParents.get(parentNodeId)!.push(parentRef._id);
+    }
 
-      const edgeKey = `${parentNodeId}->${childNodeId}`;
+    for (const [parentNodeId, parentIds] of nodeToParents.entries()) {
+      const isCouple = parentNodeId.startsWith("couple_");
+
+      let sourceHandle: string | undefined = undefined;
+      let edgeKey = `${parentNodeId}->${childNodeId}`;
+
+      if (isCouple) {
+        if (parentIds.length >= 2) {
+          sourceHandle = "couple-joint";
+        } else {
+          sourceHandle = `parent-${parentIds[0]}`;
+          edgeKey = `${parentNodeId}:${parentIds[0]}->${childNodeId}`;
+        }
+      } else {
+        sourceHandle = "single-source";
+      }
+
       if (!edgeSet.has(edgeKey)) {
         edgeSet.add(edgeKey);
 
-        const isParentLineage = lineageMemberIds.has(parentRef._id);
+        const isParentLineage = parentIds.some((pId) => lineageMemberIds.has(pId));
         const isChildLineage = lineageMemberIds.has(person._id);
         const isLineageEdge =
           Boolean(selectedPersonId) && isParentLineage && isChildLineage;
@@ -424,6 +438,7 @@ export function buildClanGraph({
           id: edgeKey,
           source: parentNodeId,
           target: childNodeId,
+          sourceHandle,
           type: "smoothstep",
           animated: isLineageEdge,
           zIndex: isLineageEdge ? 10 : 0,

@@ -111,6 +111,7 @@ export const SingleNodeComponent = memo(({ data }: NodeProps) => {
       {/* Source handle at the bottom for children lines */}
       <Handle
         type="source"
+        id="single-source"
         position={Position.Bottom}
         className={`!w-2.5 !h-2.5 !border-2 !border-slate-900 transition-colors ${
           isLineage || isHighlighted || isSelected ? "!bg-[#D4AF37]" : "!bg-slate-600"

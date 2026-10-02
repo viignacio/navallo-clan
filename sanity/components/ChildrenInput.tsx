@@ -25,64 +25,74 @@ export function ChildrenInput(props: ArrayOfObjectsInputProps) {
       (oldId) => !currentChildIds.includes(oldId)
     );
 
+    // Find children added in this input change
+    const addedChildIds = currentChildIds.filter(
+      (newId) => !prevChildrenRef.current!.includes(newId)
+    );
+
     prevChildrenRef.current = currentChildIds;
 
-    if (removedChildIds.length === 0 || !parentId) return;
+    if (!parentId) return;
 
-    // Immediately remove this parent (and spouse) from the removed child's document
-    async function unpairChild() {
-      try {
-        // Query parent's spouse to unpair co-parent as well
-        const spouseRefs: string[] = await client.fetch(
-          `*[_type == "person" && _id in [$id, "drafts." + $id]][0].spouses[]._ref`,
-          { id: parentId }
-        );
-        const spouseId = spouseRefs?.[0]?.replace(/^drafts\./, "");
-
+    // 1. Handle removals: unlink this parent from the removed child
+    if (removedChildIds.length > 0) {
+      async function unpairChildren() {
         for (const childId of removedChildIds) {
           const targetChildIds = [childId, `drafts.${childId}`];
           for (const tId of targetChildIds) {
             try {
-              const unsetPaths = [
-                `parents[_ref=="${parentId}"]`,
-                `parents[_ref=="drafts.${parentId}"]`,
-              ];
-              if (spouseId) {
-                unsetPaths.push(
-                  `parents[_ref=="${spouseId}"]`,
-                  `parents[_ref=="drafts.${spouseId}"]`
-                );
-              }
-              await client.patch(tId).unset(unsetPaths).commit();
+              await client
+                .patch(tId)
+                .unset([
+                  `parents[_ref=="${parentId}"]`,
+                  `parents[_ref=="drafts.${parentId}"]`,
+                ])
+                .commit();
             } catch {
               // Ignore if draft doesn't exist
             }
           }
+        }
+      }
+      unpairChildren().catch(() => {});
+    }
 
-          // If parent has a spouse, also remove child from spouse's children
-          if (spouseId) {
-            const targetSpouseIds = [spouseId, `drafts.${spouseId}`];
-            for (const sId of targetSpouseIds) {
-              try {
+    // 2. Handle additions: link this parent to the newly added child
+    if (addedChildIds.length > 0) {
+      async function pairChildren() {
+        for (const childId of addedChildIds) {
+          const targetChildIds = [childId, `drafts.${childId}`];
+          for (const tId of targetChildIds) {
+            try {
+              // Check if already in child's parents
+              const existingParents: Array<{ _ref?: string }> = await client.fetch(
+                `*[_type == "person" && _id == $id][0].parents`,
+                { id: tId }
+              );
+              const alreadyHasParent = (existingParents || []).some(
+                (p) => p?._ref?.replace(/^drafts\./, "") === parentId
+              );
+              if (!alreadyHasParent) {
                 await client
-                  .patch(sId)
-                  .unset([
-                    `children[_ref=="${childId}"]`,
-                    `children[_ref=="drafts.${childId}"]`,
+                  .patch(tId)
+                  .setIfMissing({ parents: [] })
+                  .append("parents", [
+                    {
+                      _type: "reference",
+                      _ref: parentId,
+                      _key: Math.random().toString(36).substring(2, 9),
+                    },
                   ])
                   .commit();
-              } catch {
-                // Ignore if draft doesn't exist
               }
+            } catch {
+              // Ignore if document not found
             }
           }
         }
-      } catch (err) {
-        console.warn("Could not auto-remove parent from unlinked child:", err);
       }
+      pairChildren().catch(() => {});
     }
-
-    unpairChild();
   }, [props.value, client, parentId]);
 
   const sanitize = (node: Element | null) => {

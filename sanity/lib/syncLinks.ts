@@ -24,13 +24,11 @@ const createFieldSets = (): FieldSets => ({
 });
 
 /**
- * Reconciles bidirectional links for a specific person or the entire clan dataset.
- * Handles both reciprocal ADDITIONS and reciprocal REMOVALS:
+ * Reconciles bidirectional links for a specific person or the entire clan dataset:
  * 1. Spouses: Person A <-> Person B
  * 2. Parents & Children:
- *    - Addition: If C has parent P (and P has spouse S), C gets [P, S] as parents, P and S get C as child.
- *    - Removal: If P unlinks C as child, C unlinks [P, S] as parents, and S unlinks C as child.
- *               If C unlinks P as parent, P and S unlink C as child.
+ *    - Child C <-> Parent P: reciprocal sync between C and P only.
+ *    - Spouses are never assumed to be co-parents unless explicitly listed.
  */
 export async function syncPersonLinks(client: SanityClient, rawDocId?: string) {
   const allDocs: PersonDoc[] = await client.fetch(
@@ -94,20 +92,11 @@ export async function syncPersonLinks(client: SanityClient, rawDocId?: string) {
         // A. If otherDoc had current as parent, but current no longer has otherDoc as child:
         if (otherParentIds.has(docId) && !childIds.has(otherId)) {
           getRemovals(otherId).parents.add(docId);
-          for (const sId of spouseIds) {
-            getRemovals(otherId).parents.add(sId);
-            getRemovals(sId).children.add(otherId);
-          }
         }
 
         // B. If otherDoc had current as child, but current no longer has otherDoc as parent:
         if (otherChildIds.has(docId) && !parentIds.has(otherId)) {
           getRemovals(otherId).children.add(docId);
-          const otherSpouses = new Set((otherDoc.spouses || []).map((s) => cleanId(s._ref)));
-          for (const sId of otherSpouses) {
-            getRemovals(sId).children.add(docId);
-            getRemovals(docId).parents.add(sId);
-          }
         }
 
         // C. If otherDoc had current as spouse, but current no longer has otherDoc as spouse:
@@ -154,51 +143,19 @@ export async function syncPersonLinks(client: SanityClient, rawDocId?: string) {
         if (!hasChildRef) {
           getAdditions(pId).children.add(docId);
         }
-
-        // Add parent's spouse as co-parent
-        for (const sp of parentDoc.spouses || []) {
-          const spouseId = cleanId(sp._ref);
-          if (getRemovals(docId).parents.has(spouseId)) continue;
-          if (!parentIds.has(spouseId)) {
-            getAdditions(docId).parents.add(spouseId);
-          }
-          const spouseDoc = docMap.get(spouseId);
-          if (
-            spouseDoc &&
-            !(spouseDoc.children || []).some((c) => cleanId(c._ref) === docId)
-          ) {
-            getAdditions(spouseId).children.add(docId);
-          }
-        }
       }
     }
 
-    // C. Children: If current has child C, C must have current (and spouses) as parents
-    const allParentIds = new Set([docId, ...spouseIds]);
+    // C. Children: If current has child C, C must have current as parent
     for (const cId of childIds) {
       if (getRemovals(cId).parents.has(docId)) continue;
       const childDoc = docMap.get(cId);
       if (childDoc) {
-        for (const pId of allParentIds) {
-          if (getRemovals(cId).parents.has(pId)) continue;
-          const hasParentRef = (childDoc.parents || []).some(
-            (p) => cleanId(p._ref) === pId
-          );
-          if (!hasParentRef) {
-            getAdditions(cId).parents.add(pId);
-          }
-        }
-      }
-
-      // Ensure current's spouses have this child
-      for (const sId of spouseIds) {
-        if (getRemovals(sId).children.has(cId)) continue;
-        const spouseDoc = docMap.get(sId);
-        if (
-          spouseDoc &&
-          !(spouseDoc.children || []).some((c) => cleanId(c._ref) === cId)
-        ) {
-          getAdditions(sId).children.add(cId);
+        const hasParentRef = (childDoc.parents || []).some(
+          (p) => cleanId(p._ref) === docId
+        );
+        if (!hasParentRef) {
+          getAdditions(cId).parents.add(docId);
         }
       }
     }

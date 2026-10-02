@@ -183,12 +183,37 @@ export const CoupleNodeComponent = memo(({ data }: NodeProps) => {
         </div>
       </div>
 
-      {/* Source handle at the bottom for children lines */}
+      {/* Source handles for children lines */}
+      {/* 1. Offshoot for left person */}
       <Handle
         type="source"
+        id={`parent-${leftPerson._id}`}
         position={Position.Bottom}
+        style={{ left: "25%" }}
+        className={`!w-2.5 !h-2.5 !border-2 !border-slate-900 transition-colors ${
+          isLeftSelected || isHighlighted ? "!bg-[#D4AF37]" : "!bg-slate-600"
+        }`}
+      />
+
+      {/* 2. Joint center handle for couple's mutual children */}
+      <Handle
+        type="source"
+        id="couple-joint"
+        position={Position.Bottom}
+        style={{ left: "50%" }}
         className={`!w-2.5 !h-2.5 !border-2 !border-slate-900 transition-colors ${
           isLineage || isHighlighted ? "!bg-[#D4AF37]" : "!bg-slate-600"
+        }`}
+      />
+
+      {/* 3. Offshoot for right person */}
+      <Handle
+        type="source"
+        id={`parent-${rightPerson._id}`}
+        position={Position.Bottom}
+        style={{ left: "75%" }}
+        className={`!w-2.5 !h-2.5 !border-2 !border-slate-900 transition-colors ${
+          isRightSelected || isHighlighted ? "!bg-[#D4AF37]" : "!bg-slate-600"
         }`}
       />
     </div>

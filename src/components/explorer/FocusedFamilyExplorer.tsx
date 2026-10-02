@@ -16,8 +16,9 @@ import {
   Info,
   PlusCircle,
   Crown,
-  User,
   Cross,
+  CornerDownRight,
+  User,
 } from "lucide-react";
 
 interface FocusedFamilyExplorerProps {
@@ -104,12 +105,386 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
   const leftMember = isCoupleMaleLeft ? person : primarySpouse;
   const rightMember = isCoupleMaleLeft ? primarySpouse : person;
 
+  // Distinct child pools when a spouse is present
+  const spouseImmediate = primarySpouse ? getImmediateFamily(primarySpouse._id, members) : null;
+  const spouseChildren = spouseImmediate ? spouseImmediate.children : [];
+
+  const leftChildren = leftMember ? (leftMember._id === person._id ? children : spouseChildren) : children;
+  const rightChildren = rightMember ? (rightMember._id === person._id ? children : spouseChildren) : [];
+
+  // 1. Joint children: both partners are parents
+  const jointChildren = primarySpouse
+    ? leftChildren.filter((lc) => rightChildren.some((rc) => rc._id === lc._id))
+    : children;
+
+  // 2. Offshoot children of left member only
+  const leftOutsideChildren = primarySpouse
+    ? leftChildren.filter((lc) => !rightChildren.some((rc) => rc._id === lc._id))
+    : [];
+
+  // 3. Offshoot children of right member only
+  const rightOutsideChildren = primarySpouse
+    ? rightChildren.filter((rc) => !leftChildren.some((lc) => lc._id === rc._id))
+    : [];
+
+  const totalChildrenCount = jointChildren.length + leftOutsideChildren.length + rightOutsideChildren.length;
+
   // Sort parents: Father (male) on left, Mother (female) on right
   const sortedParents = [...parents].sort((a, b) => {
     if (a.gender === "male" && b.gender !== "male") return -1;
     if (b.gender === "male" && a.gender !== "male") return 1;
     return 0;
   });
+
+  const areParentsSpouses =
+    sortedParents.length === 2 &&
+    (sortedParents[0].spouses || []).some((s) => s._id === sortedParents[1]._id);
+
+  const renderChildCards = (
+    childList: Person[],
+    branchType: "joint" | "left-offshoot" | "right-offshoot"
+  ) => {
+    const isOffshoot = branchType !== "joint";
+    const branchParentName =
+      branchType === "left-offshoot"
+        ? leftMember?.name.split(" ")[0]
+        : branchType === "right-offshoot"
+        ? rightMember?.name.split(" ")[0]
+        : undefined;
+
+    return childList.map((child, index) => {
+      const isFirst = index === 0;
+      const isLast = index === childList.length - 1;
+      const grandchildrenCount = members.filter((m) =>
+        (m.parents || []).some((p) => p._id === child._id)
+      ).length;
+
+      const childSpouses = (child.spouses || [])
+        .map((s) => findPersonById(members, s._id))
+        .filter(Boolean) as Person[];
+      const hasSpouse = childSpouses.length > 0;
+      const primarySpouse = childSpouses[0];
+
+      let leftPartner = child;
+      let rightPartner = primarySpouse;
+      if (hasSpouse) {
+        const isChildMale = child.gender === "male";
+        const isSpouseFemale = primarySpouse.gender === "female";
+        const isSpouseMale = primarySpouse.gender === "male";
+        const isChildFemale = child.gender === "female";
+        const isMaleLeft =
+          isChildMale ||
+          isSpouseFemale ||
+          (!isSpouseMale && !isChildFemale);
+        leftPartner = isMaleLeft ? child : primarySpouse;
+        rightPartner = isMaleLeft ? primarySpouse : child;
+      }
+
+      const isLeftSelected = selectedPersonId === leftPartner?._id;
+      const isRightSelected =
+        hasSpouse && selectedPersonId === rightPartner?._id;
+      const isContainerSelected = isLeftSelected || isRightSelected;
+      const isSelected = selectedPersonId === child._id;
+
+      const badgeLabel = isOffshoot
+        ? `Offshoot (${branchParentName})`
+        : hasSpouse
+        ? "Couple"
+        : "Child";
+
+      return (
+        <div
+          key={child._id}
+          className="relative flex flex-col items-center flex-1 min-w-0 max-w-[260px] sm:max-w-[280px]"
+        >
+          {childList.length > 1 ? (
+            <div className="w-full h-6 relative">
+              {isFirst && (
+                <div
+                  className={`absolute top-0 right-[-1px] left-1/2 h-0.5 ${
+                    isOffshoot
+                      ? "border-t-2 border-dashed border-amber-500/60"
+                      : "bg-slate-700"
+                  }`}
+                />
+              )}
+              {isLast && (
+                <div
+                  className={`absolute top-0 left-[-1px] right-1/2 h-0.5 ${
+                    isOffshoot
+                      ? "border-t-2 border-dashed border-amber-500/60"
+                      : "bg-slate-700"
+                  }`}
+                />
+              )}
+              {!isFirst && !isLast && (
+                <div
+                  className={`absolute top-0 left-[-1px] right-[-1px] h-0.5 ${
+                    isOffshoot
+                      ? "border-t-2 border-dashed border-amber-500/60"
+                      : "bg-slate-700"
+                  }`}
+                />
+              )}
+              <div
+                className={`absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 ${
+                  isOffshoot
+                    ? "border-l-2 border-dashed border-amber-500/60"
+                    : "bg-slate-700"
+                }`}
+              />
+            </div>
+          ) : (
+            <div className="w-full h-6 relative">
+              <div
+                className={`absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 ${
+                  isOffshoot
+                    ? "border-l-2 border-dashed border-amber-500/60"
+                    : "bg-slate-700"
+                }`}
+              />
+            </div>
+          )}
+
+          <div className="w-full px-1.5 sm:px-2 md:px-2.5">
+            <div
+              className={`w-full rounded-2xl p-2 sm:p-2.5 transition-all duration-200 border backdrop-blur-md ${
+                isContainerSelected || isSelected
+                  ? isOffshoot
+                    ? "bg-slate-900/95 border-amber-400 ring-2 ring-amber-400/30 shadow-[0_0_20px_rgba(212,175,55,0.2)]"
+                    : "bg-slate-900/95 border-[#D4AF37] ring-2 ring-[#D4AF37]/30 shadow-[0_0_20px_rgba(212,175,55,0.2)]"
+                  : isOffshoot
+                  ? "bg-slate-900/85 border-amber-500/30 hover:border-amber-400/60 shadow-md"
+                  : "bg-slate-900/80 border-slate-800 hover:border-slate-700 shadow-md"
+              }`}
+            >
+              <div
+                className={`flex items-center justify-between pb-1.5 mb-1.5 border-b px-1 text-[10px] font-mono ${
+                  isOffshoot ? "border-amber-500/20" : "border-slate-800/80"
+                }`}
+              >
+                <span
+                  className={`${
+                    isOffshoot
+                      ? "text-amber-400 font-semibold"
+                      : "text-[#E5C07B]/80 font-medium"
+                  } tracking-wider uppercase truncate`}
+                >
+                  {badgeLabel}
+                </span>
+                {grandchildrenCount > 0 ? (
+                  <span className="text-slate-400 truncate">
+                    {grandchildrenCount} {grandchildrenCount === 1 ? "child" : "children"}
+                  </span>
+                ) : (
+                  <span className="text-slate-500 truncate">
+                    Gen {child.generation || 2}
+                  </span>
+                )}
+              </div>
+
+              {hasSpouse ? (
+                <div className="flex flex-col gap-1.5 relative">
+                  <button
+                    type="button"
+                    onClick={() => onSelectPerson(leftPartner._id)}
+                    className={`w-full p-2 rounded-xl border text-left transition-all flex items-center gap-2.5 min-w-0 ${
+                      isLeftSelected
+                        ? "bg-[#D4AF37]/20 border-[#D4AF37] ring-1 ring-[#D4AF37]"
+                        : "bg-slate-800/40 border-slate-800 hover:bg-slate-800/80 hover:border-slate-700"
+                    }`}
+                  >
+                    <div className="relative shrink-0">
+                      <div
+                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg overflow-hidden border ${
+                          leftPartner.isDeceased
+                            ? "border-slate-700 grayscale contrast-105"
+                            : "border-[#D4AF37]/30"
+                        } bg-slate-800 flex items-center justify-center`}
+                      >
+                        {leftPartner.photoUrl ? (
+                          <img
+                            src={leftPartner.photoUrl}
+                            alt={leftPartner.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <User className="w-4 h-4 text-slate-500" />
+                        )}
+                      </div>
+                      {leftPartner.isDeceased && (
+                        <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-slate-950 border border-slate-600 flex items-center justify-center">
+                          <Cross className="w-2 h-2 text-slate-400" />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className={`text-xs sm:text-sm font-semibold truncate transition-colors ${
+                          isLeftSelected ? "text-[#F3CF65]" : "text-slate-100"
+                        }`}
+                        title={leftPartner.name}
+                      >
+                        {leftPartner.name}
+                      </p>
+                      <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-mono truncate">
+                        <span>
+                          {leftPartner._id === child._id
+                            ? "Child"
+                            : leftPartner.gender === "male"
+                            ? "Husband"
+                            : "Spouse"}
+                        </span>
+                        <span>•</span>
+                        {leftPartner.isDeceased ? (
+                          <span className="text-slate-500">✝ Deceased</span>
+                        ) : (
+                          <span className="text-emerald-400">Living</span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+
+                  <div className="flex items-center justify-center -my-0.5 z-10">
+                    <div className="h-px bg-slate-800/80 flex-1" />
+                    <div className="w-5 h-5 rounded-full bg-slate-950 border border-[#D4AF37]/50 flex items-center justify-center pointer-events-none shadow-sm mx-1 shrink-0">
+                      <Heart className="w-2.5 h-2.5 fill-[#D4AF37]/40 text-[#D4AF37]" />
+                    </div>
+                    <div className="h-px bg-slate-800/80 flex-1" />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => onSelectPerson(rightPartner._id)}
+                    className={`w-full p-2 rounded-xl border text-left transition-all flex items-center gap-2.5 min-w-0 ${
+                      isRightSelected
+                        ? "bg-[#D4AF37]/20 border-[#D4AF37] ring-1 ring-[#D4AF37]"
+                        : "bg-slate-800/40 border-slate-800 hover:bg-slate-800/80 hover:border-slate-700"
+                    }`}
+                  >
+                    <div className="relative shrink-0">
+                      <div
+                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg overflow-hidden border ${
+                          rightPartner.isDeceased
+                            ? "border-slate-700 grayscale contrast-105"
+                            : "border-[#D4AF37]/30"
+                        } bg-slate-800 flex items-center justify-center`}
+                      >
+                        {rightPartner.photoUrl ? (
+                          <img
+                            src={rightPartner.photoUrl}
+                            alt={rightPartner.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <User className="w-4 h-4 text-slate-500" />
+                        )}
+                      </div>
+                      {rightPartner.isDeceased && (
+                        <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-slate-950 border border-slate-600 flex items-center justify-center">
+                          <Cross className="w-2 h-2 text-slate-400" />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className={`text-xs sm:text-sm font-semibold truncate transition-colors ${
+                          isRightSelected ? "text-[#F3CF65]" : "text-slate-100"
+                        }`}
+                        title={rightPartner.name}
+                      >
+                        {rightPartner.name}
+                      </p>
+                      <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-mono truncate">
+                        <span>
+                          {rightPartner._id === child._id
+                            ? "Child"
+                            : rightPartner.gender === "female"
+                            ? "Wife"
+                            : "Spouse"}
+                        </span>
+                        <span>•</span>
+                        {rightPartner.isDeceased ? (
+                          <span className="text-slate-500">✝ Deceased</span>
+                        ) : (
+                          <span className="text-emerald-400">Living</span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => onSelectPerson(child._id)}
+                  className={`w-full p-2 rounded-xl border text-left transition-all flex items-center gap-2.5 min-w-0 ${
+                    isSelected
+                      ? isOffshoot
+                        ? "bg-amber-500/20 border-amber-400 ring-1 ring-amber-400"
+                        : "bg-[#D4AF37]/20 border-[#D4AF37] ring-1 ring-[#D4AF37]"
+                      : "bg-slate-800/40 border-slate-800 hover:bg-slate-800/80 hover:border-slate-700"
+                  }`}
+                >
+                  <div className="relative shrink-0">
+                    <div
+                      className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg overflow-hidden border ${
+                        child.isDeceased
+                          ? "border-slate-700 grayscale contrast-105"
+                          : isOffshoot
+                          ? "border-amber-400/40"
+                          : "border-[#D4AF37]/30"
+                      } bg-slate-800 flex items-center justify-center`}
+                    >
+                      {child.photoUrl ? (
+                        <img
+                          src={child.photoUrl}
+                          alt={child.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User className="w-4 h-4 text-slate-500" />
+                      )}
+                    </div>
+                    {child.isDeceased && (
+                      <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-slate-950 border border-slate-600 flex items-center justify-center">
+                        <Cross className="w-2 h-2 text-slate-400" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className={`text-xs sm:text-sm font-semibold truncate transition-colors ${
+                        isSelected
+                          ? isOffshoot
+                            ? "text-amber-300"
+                            : "text-[#F3CF65]"
+                          : "text-slate-100"
+                      }`}
+                      title={child.name}
+                    >
+                      {child.name}
+                    </p>
+                    <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-mono truncate">
+                      <span>Child</span>
+                      <span>•</span>
+                      {child.isDeceased ? (
+                        <span className="text-slate-500">✝ Deceased</span>
+                      ) : (
+                        <span className="text-emerald-400">Living</span>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    });
+  };
 
   return (
     <div className="w-[90vw] max-w-[1600px] mx-auto px-2 sm:px-4 py-8 space-y-10 animate-in fade-in duration-300">
@@ -241,14 +616,20 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-2xl mx-auto relative">
-                  {/* Marriage connector between parents */}
-                  <div className="hidden sm:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 items-center justify-center pointer-events-none">
-                    <div className="w-5 h-0.5 bg-[#D4AF37]/60" />
-                    <div className="w-6 h-6 rounded-full bg-slate-900 border border-[#D4AF37]/60 flex items-center justify-center shadow-md">
-                      <Heart className="w-3 h-3 text-[#E5C07B]" fill="currentColor" />
+                  {/* Marriage or Co-Parent connector between parents */}
+                  {sortedParents.length === 2 && (
+                    <div className="hidden sm:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 items-center justify-center pointer-events-none">
+                      <div className="w-5 h-0.5 bg-[#D4AF37]/60" />
+                      <div className="w-6 h-6 rounded-full bg-slate-900 border border-[#D4AF37]/60 flex items-center justify-center shadow-md">
+                        {areParentsSpouses ? (
+                          <Heart className="w-3 h-3 text-[#E5C07B]" fill="currentColor" />
+                        ) : (
+                          <span className="text-[10px] text-[#E5C07B] font-mono leading-none">✦</span>
+                        )}
+                      </div>
+                      <div className="w-5 h-0.5 bg-[#D4AF37]/60" />
                     </div>
-                    <div className="w-5 h-0.5 bg-[#D4AF37]/60" />
-                  </div>
+                  )}
 
                   {sortedParents.map((parent) => (
                     <PersonCard
@@ -383,15 +764,14 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
 
       {/* Generation Below: CHILDREN */}
       <section className="w-full">
-        {/* Tree Connector: Couple down to Children */}
+        {/* Children section badge & action */}
         <div className="relative flex flex-col items-center">
           <div className="w-0.5 h-6 bg-slate-700" />
 
-          {/* Children section badge & action */}
           <div className="relative z-10 flex items-center justify-center w-full max-w-4xl px-4">
             <div className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-[#E5C07B] font-mono bg-slate-900/90 px-3.5 py-1 rounded-full border border-slate-800 shadow-md">
               <ArrowDown className="w-3 h-3 text-[#D4AF37]" />
-              Children ({children.length})
+              Children ({totalChildrenCount})
             </div>
 
             <div className="absolute right-4 hidden sm:block">
@@ -404,301 +784,65 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
               </a>
             </div>
           </div>
-
-          <div className="w-0.5 h-6 bg-slate-700" />
         </div>
 
-        {children.length > 0 ? (
-          <div className="w-full">
-            <div className="flex items-start justify-center w-full">
-              {children.map((child, index) => {
-                const isFirst = index === 0;
-                const isLast = index === children.length - 1;
-                const grandchildrenCount = members.filter((m) =>
-                  (m.parents || []).some((p) => p._id === child._id)
-                ).length;
-
-                // Find spouses of this child
-                const childSpouses = (child.spouses || [])
-                  .map((s) => findPersonById(members, s._id))
-                  .filter(Boolean) as Person[];
-                const hasSpouse = childSpouses.length > 0;
-                const primarySpouse = childSpouses[0];
-
-                // Arrange couple: Husband (male) on left, Wife (female) on right
-                let leftPartner = child;
-                let rightPartner = primarySpouse;
-                if (hasSpouse) {
-                  const isChildMale = child.gender === "male";
-                  const isSpouseFemale = primarySpouse.gender === "female";
-                  const isSpouseMale = primarySpouse.gender === "male";
-                  const isChildFemale = child.gender === "female";
-                  const isMaleLeft =
-                    isChildMale ||
-                    isSpouseFemale ||
-                    (!isSpouseMale && !isChildFemale);
-                  leftPartner = isMaleLeft ? child : primarySpouse;
-                  rightPartner = isMaleLeft ? primarySpouse : child;
-                }
-
-                const isLeftSelected = selectedPersonId === leftPartner?._id;
-                const isRightSelected =
-                  hasSpouse && selectedPersonId === rightPartner?._id;
-                const isContainerSelected = isLeftSelected || isRightSelected;
-
-                return (
-                  <div
-                    key={child._id}
-                    className="relative flex flex-col items-center flex-1 min-w-0 max-w-[260px] sm:max-w-[280px]"
-                  >
-                    {/* Tree connector lines for multiple children */}
-                    {children.length > 1 ? (
-                      <div className="w-full h-6 relative">
-                        {isFirst && (
-                          <div className="absolute top-0 right-[-1px] left-1/2 h-0.5 bg-slate-700" />
-                        )}
-                        {isLast && (
-                          <div className="absolute top-0 left-[-1px] right-1/2 h-0.5 bg-slate-700" />
-                        )}
-                        {!isFirst && !isLast && (
-                          <div className="absolute top-0 left-[-1px] right-[-1px] h-0.5 bg-slate-700" />
-                        )}
-                        <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 bg-slate-700" />
-                      </div>
-                    ) : (
-                      <div className="w-full h-6 relative">
-                        <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 bg-slate-700" />
-                      </div>
-                    )}
-
-                    {/* Card wrapper with padding to give space between adjacent cards */}
-                    <div className="w-full px-1.5 sm:px-2 md:px-2.5">
-                      {/* Both Spouses in 1 Container (Stacked Vertically) */}
-                      <div
-                        className={`w-full rounded-2xl p-2 sm:p-2.5 transition-all duration-200 border backdrop-blur-md ${
-                          isContainerSelected
-                            ? "bg-slate-900/95 border-[#D4AF37] ring-2 ring-[#D4AF37]/30 shadow-[0_0_20px_rgba(212,175,55,0.2)]"
-                            : "bg-slate-900/80 border-slate-800 hover:border-slate-700 shadow-md"
-                        }`}
-                      >
-                        {/* Top Header Badge */}
-                        <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-slate-800/80 px-1 text-[10px] font-mono">
-                        <span className="text-[#E5C07B]/80 font-medium tracking-wider uppercase truncate">
-                          {hasSpouse ? "Couple" : "Child"}
-                        </span>
-                        {grandchildrenCount > 0 ? (
-                          <span className="text-slate-400 truncate">
-                            {grandchildrenCount} {grandchildrenCount === 1 ? "child" : "children"}
-                          </span>
-                        ) : (
-                          <span className="text-slate-500 truncate">
-                            Gen {child.generation || 2}
-                          </span>
-                        )}
-                      </div>
-
-                      {hasSpouse ? (
-                        /* Married: Dual Spouses Stacked Vertically in 1 Container */
-                        <div className="flex flex-col gap-1.5 relative">
-                          {/* Top Partner (Husband) */}
-                          <button
-                            type="button"
-                            onClick={() => onSelectPerson(leftPartner._id)}
-                            className={`w-full p-2 rounded-xl border text-left transition-all flex items-center gap-2.5 min-w-0 ${
-                              isLeftSelected
-                                ? "bg-[#D4AF37]/20 border-[#D4AF37] ring-1 ring-[#D4AF37]"
-                                : "bg-slate-800/40 border-slate-800 hover:bg-slate-800/80 hover:border-slate-700"
-                            }`}
-                          >
-                            <div className="relative shrink-0">
-                              <div
-                                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg overflow-hidden border ${
-                                  leftPartner.isDeceased
-                                    ? "border-slate-700 grayscale contrast-105"
-                                    : "border-[#D4AF37]/30"
-                                } bg-slate-800 flex items-center justify-center`}
-                              >
-                                {leftPartner.photoUrl ? (
-                                  <img
-                                    src={leftPartner.photoUrl}
-                                    alt={leftPartner.name}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <User className="w-4 h-4 text-slate-500" />
-                                )}
-                              </div>
-                              {leftPartner.isDeceased && (
-                                <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-slate-950 border border-slate-600 flex items-center justify-center">
-                                  <Cross className="w-2 h-2 text-slate-400" />
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="min-w-0 flex-1">
-                              <p
-                                className={`text-xs sm:text-sm font-semibold truncate transition-colors ${
-                                  isLeftSelected ? "text-[#F3CF65]" : "text-slate-100"
-                                }`}
-                                title={leftPartner.name}
-                              >
-                                {leftPartner.name}
-                              </p>
-                              <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-mono truncate">
-                                <span>
-                                  {leftPartner._id === child._id
-                                    ? "Child"
-                                    : leftPartner.gender === "male"
-                                    ? "Husband"
-                                    : "Spouse"}
-                                </span>
-                                <span>•</span>
-                                {leftPartner.isDeceased ? (
-                                  <span className="text-slate-500">✝ Deceased</span>
-                                ) : (
-                                  <span className="text-emerald-400">Living</span>
-                                )}
-                              </div>
-                            </div>
-                          </button>
-
-                          {/* Heart divider between spouses */}
-                          <div className="flex items-center justify-center -my-0.5 z-10">
-                            <div className="h-px bg-slate-800/80 flex-1" />
-                            <div className="w-5 h-5 rounded-full bg-slate-950 border border-[#D4AF37]/50 flex items-center justify-center pointer-events-none shadow-sm mx-1 shrink-0">
-                              <Heart className="w-2.5 h-2.5 fill-[#D4AF37]/40 text-[#D4AF37]" />
-                            </div>
-                            <div className="h-px bg-slate-800/80 flex-1" />
-                          </div>
-
-                          {/* Bottom Partner (Wife) */}
-                          <button
-                            type="button"
-                            onClick={() => onSelectPerson(rightPartner._id)}
-                            className={`w-full p-2 rounded-xl border text-left transition-all flex items-center gap-2.5 min-w-0 ${
-                              isRightSelected
-                                ? "bg-[#D4AF37]/20 border-[#D4AF37] ring-1 ring-[#D4AF37]"
-                                : "bg-slate-800/40 border-slate-800 hover:bg-slate-800/80 hover:border-slate-700"
-                            }`}
-                          >
-                            <div className="relative shrink-0">
-                              <div
-                                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg overflow-hidden border ${
-                                  rightPartner.isDeceased
-                                    ? "border-slate-700 grayscale contrast-105"
-                                    : "border-[#D4AF37]/30"
-                                } bg-slate-800 flex items-center justify-center`}
-                              >
-                                {rightPartner.photoUrl ? (
-                                  <img
-                                    src={rightPartner.photoUrl}
-                                    alt={rightPartner.name}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <User className="w-4 h-4 text-slate-500" />
-                                )}
-                              </div>
-                              {rightPartner.isDeceased && (
-                                <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-slate-950 border border-slate-600 flex items-center justify-center">
-                                  <Cross className="w-2 h-2 text-slate-400" />
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="min-w-0 flex-1">
-                              <p
-                                className={`text-xs sm:text-sm font-semibold truncate transition-colors ${
-                                  isRightSelected ? "text-[#F3CF65]" : "text-slate-100"
-                                }`}
-                                title={rightPartner.name}
-                              >
-                                {rightPartner.name}
-                              </p>
-                              <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-mono truncate">
-                                <span>
-                                  {rightPartner._id === child._id
-                                    ? "Child"
-                                    : rightPartner.gender === "female"
-                                    ? "Wife"
-                                    : "Spouse"}
-                                </span>
-                                <span>•</span>
-                                {rightPartner.isDeceased ? (
-                                  <span className="text-slate-500">✝ Deceased</span>
-                                ) : (
-                                  <span className="text-emerald-400">Living</span>
-                                )}
-                              </div>
-                            </div>
-                          </button>
-                        </div>
-                      ) : (
-                        /* Unmarried: Single Child in 1 Container */
-                        <button
-                          type="button"
-                          onClick={() => onSelectPerson(child._id)}
-                          className={`w-full p-2 rounded-xl border text-left transition-all flex items-center gap-2.5 min-w-0 ${
-                            isLeftSelected
-                              ? "bg-[#D4AF37]/20 border-[#D4AF37] ring-1 ring-[#D4AF37]"
-                              : "bg-slate-800/40 border-slate-800 hover:bg-slate-800/80 hover:border-slate-700"
-                          }`}
-                        >
-                          <div className="relative shrink-0">
-                            <div
-                              className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg overflow-hidden border ${
-                                child.isDeceased
-                                  ? "border-slate-700 grayscale contrast-105"
-                                  : "border-[#D4AF37]/30"
-                              } bg-slate-800 flex items-center justify-center`}
-                            >
-                              {child.photoUrl ? (
-                                <img
-                                  src={child.photoUrl}
-                                  alt={child.name}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <User className="w-4 h-4 text-slate-500" />
-                              )}
-                            </div>
-                            {child.isDeceased && (
-                              <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-slate-950 border border-slate-600 flex items-center justify-center">
-                                <Cross className="w-2 h-2 text-slate-400" />
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="min-w-0 flex-1">
-                            <p
-                              className={`text-xs sm:text-sm font-semibold truncate transition-colors ${
-                                isLeftSelected ? "text-[#F3CF65]" : "text-slate-100"
-                              }`}
-                              title={child.name}
-                            >
-                              {child.name}
-                            </p>
-                            <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-mono truncate">
-                              <span>Child</span>
-                              <span>•</span>
-                              {child.isDeceased ? (
-                                <span className="text-slate-500">✝ Deceased</span>
-                              ) : (
-                                <span className="text-emerald-400">Living</span>
-                              )}
-                            </div>
-                          </div>
-                        </button>
-                      )}
+        {totalChildrenCount > 0 ? (
+          <div className="w-full mt-2 space-y-8">
+            {/* Case A: Joint children */}
+            {jointChildren.length > 0 && (
+              <div className="w-full space-y-2">
+                <div className="relative flex flex-col items-center">
+                  <div className="w-0.5 h-6 bg-slate-700" />
+                  {(leftOutsideChildren.length > 0 || rightOutsideChildren.length > 0) && (
+                    <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-[#E5C07B] font-mono bg-slate-900/95 px-3 py-0.5 rounded-full border border-slate-800 shadow-sm mb-1">
+                      <Heart className="w-2.5 h-2.5 text-[#D4AF37] fill-[#D4AF37]/40" />
+                      Mutual Children of {leftMember?.name.split(" ")[0]} & {rightMember?.name.split(" ")[0]} ({jointChildren.length})
                     </div>
+                  )}
+                </div>
+
+                <div className="flex items-start justify-center w-full flex-wrap gap-y-4">
+                  {renderChildCards(jointChildren, "joint")}
+                </div>
+              </div>
+            )}
+
+            {/* Case B: Left Member Offshoot Children */}
+            {leftOutsideChildren.length > 0 && leftMember && (
+              <div className="w-full space-y-2 pt-6 border-t border-slate-800/80">
+                <div className="relative flex flex-col items-center">
+                  <div className="w-0.5 h-6 border-l-2 border-dashed border-amber-500/60" />
+                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-amber-300 font-mono bg-slate-900/95 px-3 py-0.5 rounded-full border border-amber-500/40 shadow-sm mb-1">
+                    <CornerDownRight className="w-2.5 h-2.5 text-amber-400" />
+                    Offshoot of {leftMember.name.split(" ")[0]} only ({leftOutsideChildren.length})
                   </div>
                 </div>
-              );
-              })}
-            </div>
+
+                <div className="flex items-start justify-center w-full flex-wrap gap-y-4">
+                  {renderChildCards(leftOutsideChildren, "left-offshoot")}
+                </div>
+              </div>
+            )}
+
+            {/* Case C: Right Member Offshoot Children */}
+            {rightOutsideChildren.length > 0 && rightMember && (
+              <div className="w-full space-y-2 pt-6 border-t border-slate-800/80">
+                <div className="relative flex flex-col items-center">
+                  <div className="w-0.5 h-6 border-l-2 border-dashed border-amber-500/60" />
+                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-amber-300 font-mono bg-slate-900/95 px-3 py-0.5 rounded-full border border-amber-500/40 shadow-sm mb-1">
+                    <CornerDownRight className="w-2.5 h-2.5 text-amber-400" />
+                    Offshoot of {rightMember.name.split(" ")[0]} only ({rightOutsideChildren.length})
+                  </div>
+                </div>
+
+                <div className="flex items-start justify-center w-full flex-wrap gap-y-4">
+                  {renderChildCards(rightOutsideChildren, "right-offshoot")}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
-          <div className="text-center py-8 px-6 rounded-2xl bg-slate-900/40 border border-slate-800/80 max-w-md mx-auto space-y-3">
+          <div className="text-center py-8 px-6 rounded-2xl bg-slate-900/40 border border-slate-800/80 max-w-md mx-auto space-y-3 mt-4">
             <p className="text-xs text-slate-400 font-mono">
               No registered children recorded for this member.
             </p>
