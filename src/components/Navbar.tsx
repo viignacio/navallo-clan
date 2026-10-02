@@ -4,16 +4,13 @@ import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { Person } from "../types/clan";
 import {
-  Compass,
   Maximize2,
   Minimize2,
   Search,
-  Users,
   Settings,
   X,
   ChevronRight,
   Shield,
-  Layers,
   RefreshCw,
 } from "lucide-react";
 

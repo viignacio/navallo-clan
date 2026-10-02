@@ -41,7 +41,10 @@ export function enrichClanMembers(rawMembers: Person[]): Person[] {
           (m) => !m.parents || m.parents.length === 0
         );
 
-  gen1Members.forEach((m) => genMap.set(m._id, 1));
+  gen1Members.forEach((m) => {
+    genMap.set(m._id, 1);
+    (m.spouses || []).forEach((s) => genMap.set(s._id, 1));
+  });
 
   // Breadth-First-Search down generations
   let currentGen = 1;

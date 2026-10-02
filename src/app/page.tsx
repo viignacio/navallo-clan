@@ -6,7 +6,7 @@ import { Navbar } from "../components/Navbar";
 import { FocusedFamilyExplorer } from "../components/explorer/FocusedFamilyExplorer";
 import { ClanCanvasView } from "../components/canvas/ClanCanvasView";
 import { enrichClanMembers } from "../lib/graphLayout";
-import { hasSanityCredentials } from "../../sanity/env";
+import { hasSanityCredentials, projectId } from "../../sanity/env";
 
 
 export default function ClanTreeHomePage() {
@@ -55,22 +55,15 @@ export default function ClanTreeHomePage() {
     }
   }, []);
 
-  // Initial fetch and real-time polling
+  // Initial fetch and focus listener (re-fetches when returning from Studio)
   useEffect(() => {
     fetchSanityData(false);
 
-    // Auto-refresh when user focuses window (e.g. returning from Sanity Studio tab)
     const onFocus = () => fetchSanityData(true);
     window.addEventListener("focus", onFocus);
 
-    // Periodic background poll every 4 seconds to catch new entries published in Sanity
-    const interval = setInterval(() => {
-      fetchSanityData(true);
-    }, 4000);
-
     return () => {
       window.removeEventListener("focus", onFocus);
-      clearInterval(interval);
     };
   }, [fetchSanityData]);
 
@@ -126,7 +119,7 @@ export default function ClanTreeHomePage() {
               Sanity Studio CMS
             </a>
             <span>•</span>
-            <span className="text-emerald-400">Project: cluf6jle</span>
+            <span className="text-emerald-400">Project: {projectId || "local"}</span>
             <span>•</span>
             <span>Auto-Sync Active</span>
           </div>

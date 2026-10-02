@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Person } from "../../types/clan";
-import { Heart, Sparkles, User, Cross } from "lucide-react";
+import { User, Cross } from "lucide-react";
 
 interface PersonCardProps {
   person: Person;

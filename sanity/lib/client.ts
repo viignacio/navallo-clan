@@ -18,12 +18,7 @@ export const PERSON_QUERY = `*[_type == "person"] | order(birthDate asc) {
   isDeceased,
   birthDate,
   deathDate,
-  photo {
-    asset->{
-      _id,
-      url
-    }
-  },
+  "photoUrl": photo.asset->url,
   bio,
   isFounder,
   "parents": coalesce(parents[]->{_id, name}, []),

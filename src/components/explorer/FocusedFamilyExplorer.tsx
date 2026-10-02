@@ -15,7 +15,6 @@ import {
   Sparkles,
   Info,
   PlusCircle,
-  Crown,
   Cross,
   CornerDownRight,
   User,

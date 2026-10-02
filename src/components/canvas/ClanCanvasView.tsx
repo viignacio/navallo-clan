@@ -410,117 +410,64 @@ function ClanCanvasInternal({
 
           {/* Immediate Family Links Roster */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {/* Parents */}
-            <div>
-              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-2">
-                Parents ({immediateFamily.parents.length})
-              </span>
-              {immediateFamily.parents.length > 0 ? (
-                <div className="space-y-1.5">
-                  {immediateFamily.parents.map((p) => (
-                    <button
-                      key={p._id}
-                      onClick={() => onSelectPerson(p._id)}
-                      className="w-full flex items-center gap-2.5 p-2 rounded-xl bg-slate-800/40 hover:bg-slate-800 border border-slate-800/80 text-left transition-colors group"
-                    >
-                      <div className="w-7 h-7 rounded-lg overflow-hidden bg-slate-700 shrink-0">
-                        {p.photoUrl && (
-                          <img
-                            src={p.photoUrl}
-                            alt={p.name}
-                            className={`w-full h-full object-cover ${
-                              p.isDeceased ? "grayscale" : ""
-                            }`}
-                          />
-                        )}
-                      </div>
-                      <span className="text-xs text-slate-200 group-hover:text-[#E5C07B] truncate flex-1 font-medium">
-                        {p.name}
-                      </span>
-                      {p.isDeceased && (
-                        <Cross className="w-3 h-3 text-slate-500 shrink-0" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-[11px] text-slate-500 italic">
-                  No recorded parents
-                </p>
-              )}
-            </div>
-
-            {/* Spouse(s) */}
-            <div>
-              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-2">
-                Spouse / Partner ({immediateFamily.spouses.length})
-              </span>
-              {immediateFamily.spouses.length > 0 ? (
-                <div className="space-y-1.5">
-                  {immediateFamily.spouses.map((s) => (
-                    <button
-                      key={s._id}
-                      onClick={() => onSelectPerson(s._id)}
-                      className="w-full flex items-center gap-2.5 p-2 rounded-xl bg-slate-800/40 hover:bg-slate-800 border border-slate-800/80 text-left transition-colors group"
-                    >
-                      <div className="w-7 h-7 rounded-lg overflow-hidden bg-slate-700 shrink-0">
-                        {s.photoUrl && (
-                          <img
-                            src={s.photoUrl}
-                            alt={s.name}
-                            className={`w-full h-full object-cover ${
-                              s.isDeceased ? "grayscale" : ""
-                            }`}
-                          />
-                        )}
-                      </div>
-                      <span className="text-xs text-slate-200 group-hover:text-[#E5C07B] truncate flex-1 font-medium">
-                        {s.name}
-                      </span>
-                      <Heart className="w-3 h-3 text-[#D4AF37] shrink-0" />
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-[11px] text-slate-500 italic">Single</p>
-              )}
-            </div>
-
-            {/* Children */}
-            <div>
-              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-2">
-                Children ({immediateFamily.children.length})
-              </span>
-              {immediateFamily.children.length > 0 ? (
-                <div className="space-y-1.5">
-                  {immediateFamily.children.map((c) => (
-                    <button
-                      key={c._id}
-                      onClick={() => onSelectPerson(c._id)}
-                      className="w-full flex items-center gap-2.5 p-2 rounded-xl bg-slate-800/40 hover:bg-slate-800 border border-slate-800/80 text-left transition-colors group"
-                    >
-                      <div className="w-7 h-7 rounded-lg overflow-hidden bg-slate-700 shrink-0">
-                        {c.photoUrl && (
-                          <img
-                            src={c.photoUrl}
-                            alt={c.name}
-                            className={`w-full h-full object-cover ${
-                              c.isDeceased ? "grayscale" : ""
-                            }`}
-                          />
-                        )}
-                      </div>
-                      <span className="text-xs text-slate-200 group-hover:text-[#E5C07B] truncate flex-1 font-medium">
-                        {c.name}
-                      </span>
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-[#E5C07B] shrink-0" />
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-[11px] text-slate-500 italic">No registered children</p>
-              )}
-            </div>
+            {[
+              {
+                title: "Parents",
+                list: immediateFamily.parents,
+                empty: "No recorded parents",
+                icon: (p: Person) =>
+                  p.isDeceased ? <Cross className="w-3 h-3 text-slate-500 shrink-0" /> : null,
+              },
+              {
+                title: "Spouse / Partner",
+                list: immediateFamily.spouses,
+                empty: "Single",
+                icon: () => <Heart className="w-3 h-3 text-[#D4AF37] shrink-0" />,
+              },
+              {
+                title: "Children",
+                list: immediateFamily.children,
+                empty: "No registered children",
+                icon: () => (
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-[#E5C07B] shrink-0" />
+                ),
+              },
+            ].map(({ title, list, empty, icon }) => (
+              <div key={title}>
+                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-2">
+                  {title} ({list.length})
+                </span>
+                {list.length > 0 ? (
+                  <div className="space-y-1.5">
+                    {list.map((m) => (
+                      <button
+                        key={m._id}
+                        onClick={() => onSelectPerson(m._id)}
+                        className="w-full flex items-center gap-2.5 p-2 rounded-xl bg-slate-800/40 hover:bg-slate-800 border border-slate-800/80 text-left transition-colors group"
+                      >
+                        <div className="w-7 h-7 rounded-lg overflow-hidden bg-slate-700 shrink-0">
+                          {m.photoUrl && (
+                            <img
+                              src={m.photoUrl}
+                              alt={m.name}
+                              className={`w-full h-full object-cover ${
+                                m.isDeceased ? "grayscale" : ""
+                              }`}
+                            />
+                          )}
+                        </div>
+                        <span className="text-xs text-slate-200 group-hover:text-[#E5C07B] truncate flex-1 font-medium">
+                          {m.name}
+                        </span>
+                        {icon(m)}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-slate-500 italic">{empty}</p>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       )}
