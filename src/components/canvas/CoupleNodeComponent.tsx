@@ -10,7 +10,6 @@ export const CoupleNodeComponent = memo(({ data }: NodeProps) => {
   const {
     primaryPerson,
     spousePerson,
-    generation,
     isImmediateFamily,
     isLineage,
     isHighlighted,
@@ -49,25 +48,25 @@ export const CoupleNodeComponent = memo(({ data }: NodeProps) => {
         }`}
       />
 
-      {/* Generation Tag */}
-      <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-800">
-        <span
-          className={`text-[10px] uppercase font-mono tracking-wider transition-colors ${
-            isHighlighted || isLineage
-              ? "text-[#E5C07B] font-semibold"
-              : "text-slate-400"
-          }`}
-        >
-          Generation {generation} • Couple
-          {isHighlighted && " • Selected"}
-          {!isHighlighted && isLineage && " • Lineage"}
-        </span>
-        {nodeData.childIds.length > 0 && (
-          <span className="text-[10px] text-slate-400 font-mono">
-            {nodeData.childIds.length} {nodeData.childIds.length === 1 ? "Child" : "Children"}
+      {/* Header Status */}
+      {(isHighlighted || isLineage || nodeData.childIds.length > 0) && (
+        <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-800 text-[10px] font-mono">
+          <span
+            className={`uppercase tracking-wider transition-colors ${
+              isHighlighted || isLineage
+                ? "text-[#E5C07B] font-semibold"
+                : "text-slate-400"
+            }`}
+          >
+            {isHighlighted ? "Selected" : isLineage ? "Lineage" : ""}
           </span>
-        )}
-      </div>
+          {nodeData.childIds.length > 0 && (
+            <span className="text-slate-400">
+              {nodeData.childIds.length} {nodeData.childIds.length === 1 ? "Child" : "Children"}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Couple Dual Display: Husband left, Wife right */}
       <div className="grid grid-cols-2 gap-2 relative">
@@ -122,9 +121,11 @@ export const CoupleNodeComponent = memo(({ data }: NodeProps) => {
               <h5 className="text-xs font-semibold text-slate-100 truncate">
                 {leftPerson.name.split(" ")[0]} {leftPerson.name.split(" ").slice(-1)[0]}
               </h5>
-              <p className="text-[10px] text-slate-400 font-mono truncate">
-                {leftPerson.birthDate || "?"} – {leftPerson.isDeceased ? leftPerson.deathDate || "✝" : "Living"}
-              </p>
+              {(leftPerson.birthDate || leftPerson.isDeceased) && (
+                <p className="text-[10px] text-slate-400 font-mono truncate">
+                  {leftPerson.birthDate || ""}{leftPerson.isDeceased ? ` – ${leftPerson.deathDate || "✝"}` : ""}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -175,9 +176,11 @@ export const CoupleNodeComponent = memo(({ data }: NodeProps) => {
               <h5 className="text-xs font-semibold text-slate-100 truncate">
                 {rightPerson.name.split(" ")[0]} {rightPerson.name.split(" ").slice(-1)[0]}
               </h5>
-              <p className="text-[10px] text-slate-400 font-mono truncate">
-                {rightPerson.birthDate || "?"} – {rightPerson.isDeceased ? rightPerson.deathDate || "✝" : "Living"}
-              </p>
+              {(rightPerson.birthDate || rightPerson.isDeceased) && (
+                <p className="text-[10px] text-slate-400 font-mono truncate">
+                  {rightPerson.birthDate || ""}{rightPerson.isDeceased ? ` – ${rightPerson.deathDate || "✝"}` : ""}
+                </p>
+              )}
             </div>
           </div>
         </div>

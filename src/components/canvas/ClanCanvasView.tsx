@@ -11,7 +11,7 @@ import {
   ReactFlowProvider,
   Node,
 } from "@xyflow/react";
-import { Person, ImmediateFamily } from "../../types/clan";
+import { Person } from "../../types/clan";
 import {
   buildClanGraph,
   getImmediateFamily,
@@ -213,9 +213,11 @@ function ClanCanvasInternal({
                       <p className="text-xs font-medium text-slate-200 group-hover:text-[#E5C07B] truncate">
                         {m.name}
                       </p>
-                      <p className="text-[10px] text-slate-400 font-mono">
-                        Gen {m.generation || "?"} • {m.isDeceased ? "Deceased" : "Living"}
-                      </p>
+                      {m.isDeceased && (
+                        <p className="text-[10px] text-slate-400 font-mono">
+                          ✝ Deceased
+                        </p>
+                      )}
                     </div>
                     <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-[#E5C07B]" />
                   </button>
@@ -369,26 +371,20 @@ function ClanCanvasInternal({
                     &ldquo;{selectedPerson.nickname}&rdquo;
                   </p>
                 )}
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[11px] font-mono text-slate-400">
-                    {selectedPerson.birthDate || "?"} –{" "}
-                    {selectedPerson.isDeceased
-                      ? selectedPerson.deathDate || "✝"
-                      : "Living"}
-                  </span>
-                  {selectedPerson.isDeceased && (
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
-                      Memorial
+                {(selectedPerson.birthDate || selectedPerson.isDeceased) && (
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-[11px] font-mono text-slate-400">
+                      {selectedPerson.birthDate || ""}
+                      {selectedPerson.isDeceased && ` – ${selectedPerson.deathDate || "✝"}`}
                     </span>
-                  )}
-                </div>
-                {selectedPerson.generation && (
-                  <div className="mt-1.5">
-                    <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider">
-                      Gen {selectedPerson.generation}
-                    </span>
+                    {selectedPerson.isDeceased && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                        Deceased
+                      </span>
+                    )}
                   </div>
                 )}
+
               </div>
             </div>
 

@@ -9,7 +9,6 @@ interface PersonCardProps {
   isSelected?: boolean;
   isFocused?: boolean;
   size?: "sm" | "md" | "lg";
-  roleLabel?: string;
   onClick?: () => void;
 }
 
@@ -18,7 +17,6 @@ export const PersonCard: React.FC<PersonCardProps> = ({
   isSelected = false,
   isFocused = false,
   size = "md",
-  roleLabel,
   onClick,
 }) => {
   const isSm = size === "sm";
@@ -26,21 +24,22 @@ export const PersonCard: React.FC<PersonCardProps> = ({
 
   const datesText = [
     person.birthDate ? `b. ${person.birthDate}` : "",
-    person.isDeceased
-      ? person.deathDate
-        ? `d. ${person.deathDate}`
-        : "Deceased"
-      : "",
+    person.deathDate ? `d. ${person.deathDate}` : "",
   ]
     .filter(Boolean)
     .join(" – ");
 
-  const displayRole = roleLabel;
+  const hasExtraInfo = Boolean(
+    datesText ||
+    person.isDeceased ||
+    (!isSm && person.bio) ||
+    (!isSm && person.parents && person.parents.length > 0)
+  );
 
   return (
     <div
       onClick={onClick}
-      className={`group relative rounded-2xl transition-all duration-300 cursor-pointer overflow-hidden border ${
+      className={`group relative rounded-2xl h-full transition-all duration-300 cursor-pointer overflow-hidden border ${
         isFocused
           ? "bg-slate-900/90 border-[#D4AF37] ring-2 ring-[#D4AF37]/50 shadow-[0_0_30px_rgba(212,175,55,0.25)]"
           : isSelected
@@ -48,20 +47,7 @@ export const PersonCard: React.FC<PersonCardProps> = ({
           : "bg-slate-900/60 border-slate-800 hover:border-slate-700 hover:bg-slate-900/80 shadow-md shadow-black/20"
       } ${isSm ? "p-3" : isLg ? "p-6" : "p-4"}`}
     >
-      {/* Role tag */}
-      {displayRole && (
-        <div
-          className={`absolute top-2 right-2 px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wider uppercase border shadow-sm ${
-            isFocused
-              ? "bg-[#D4AF37]/20 text-[#F3CF65] border-[#D4AF37]/40"
-              : "bg-[#D4AF37]/10 text-[#E5C07B] border-[#D4AF37]/20"
-          }`}
-        >
-          {displayRole}
-        </div>
-      )}
-
-      <div className="flex items-start gap-3.5">
+      <div className={`flex ${hasExtraInfo ? "items-start" : "items-center"} gap-3.5 h-full`}>
         {/* Avatar / Portrait */}
         <div className="relative shrink-0">
           <div
@@ -122,21 +108,20 @@ export const PersonCard: React.FC<PersonCardProps> = ({
           </div>
 
           {/* Dates & Status */}
-          <div className="flex items-center gap-2 mt-1">
-            <p className="text-xs text-slate-400 font-mono">
-              {datesText || "Family Member"}
-            </p>
-            {person.isDeceased ? (
-              <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-slate-400 bg-slate-800/80 px-1.5 py-0.2 rounded border border-slate-700/60">
-                Memorial
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-400/90 bg-emerald-950/40 px-1.5 py-0.2 rounded border border-emerald-800/40">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Living
-              </span>
-            )}
-          </div>
+          {(datesText || person.isDeceased) && (
+            <div className="flex items-center gap-2 mt-1">
+              {datesText && (
+                <p className="text-xs text-slate-400 font-mono">
+                  {datesText}
+                </p>
+              )}
+              {person.isDeceased && (
+                <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-slate-400 bg-slate-800/80 px-1.5 py-0.2 rounded border border-slate-700/60">
+                  Deceased
+                </span>
+              )}
+            </div>
+          )}
 
           {/* Short Bio (shown on medium and large cards) */}
           {!isSm && person.bio && (
@@ -145,19 +130,12 @@ export const PersonCard: React.FC<PersonCardProps> = ({
             </p>
           )}
 
-          {/* Generation Tag */}
-          {!isSm && (
+          {/* Parent lineage note */}
+          {!isSm && person.parents && person.parents.length > 0 && (
             <div className="mt-2.5 flex items-center gap-2 flex-wrap">
-              {person.generation ? (
-                <span className="text-[10px] text-slate-400 uppercase tracking-widest font-mono">
-                  Gen {person.generation}
-                </span>
-              ) : null}
-              {person.parents && person.parents.length > 0 && (
-                <span className="text-[10px] text-slate-500">
-                  Child of {person.parents.map((p) => p.name.split(" ")[0]).join(" & ")}
-                </span>
-              )}
+              <span className="text-[10px] text-slate-500">
+                Child of {person.parents.map((p) => p.name.split(" ")[0]).join(" & ")}
+              </span>
             </div>
           )}
         </div>

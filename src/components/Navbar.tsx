@@ -36,14 +36,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  // Statistics
-  const stats = useMemo(() => {
-    const total = members.length;
-    const deceased = members.filter((m) => m.isDeceased).length;
-    const living = total - deceased;
-    const maxGen = total > 0 ? Math.max(...members.map((m) => m.generation || 1), 1) : 0;
-    return { total, deceased, living, maxGen };
-  }, [members]);
 
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
@@ -79,8 +71,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
             </div>
             <p className="text-[10px] text-slate-400 font-mono">
-              {stats.total > 0
-                ? `${stats.total} Members • ${stats.maxGen} Generations`
+              {members.length > 0
+                ? `${members.length} Members`
                 : "Awaiting Sanity Entries"}
             </p>
           </div>
@@ -129,9 +121,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <p className="text-xs font-medium text-slate-200 group-hover:text-[#E5C07B] truncate">
                       {m.name} {m.nickname && `(${m.nickname})`}
                     </p>
-                    <p className="text-[10px] text-slate-500 font-mono">
-                      Gen {m.generation || "?"} • {m.isDeceased ? "Deceased" : "Living"}
-                    </p>
+                    {m.isDeceased && (
+                      <p className="text-[10px] text-slate-500 font-mono">
+                        ✝ Deceased
+                      </p>
+                    )}
                   </div>
                   <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-[#E5C07B]" />
                 </button>

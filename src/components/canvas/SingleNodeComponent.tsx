@@ -9,7 +9,6 @@ export const SingleNodeComponent = memo(({ data }: NodeProps) => {
   const nodeData = data as unknown as SingleNodeData;
   const {
     person,
-    generation,
     isImmediateFamily,
     isLineage,
     isHighlighted,
@@ -45,25 +44,25 @@ export const SingleNodeComponent = memo(({ data }: NodeProps) => {
         }`}
       />
 
-      {/* Generation Tag */}
-      <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-800">
-        <span
-          className={`text-[10px] uppercase font-mono tracking-wider transition-colors ${
-            isHighlighted || isSelected || isLineage
-              ? "text-[#E5C07B] font-semibold"
-              : "text-slate-400"
-          }`}
-        >
-          Generation {generation} • Individual
-          {(isHighlighted || isSelected) && " • Selected"}
-          {!(isHighlighted || isSelected) && isLineage && " • Lineage"}
-        </span>
-        {nodeData.childIds.length > 0 && (
-          <span className="text-[10px] text-slate-400 font-mono">
-            {nodeData.childIds.length} {nodeData.childIds.length === 1 ? "Child" : "Children"}
+      {/* Header Status */}
+      {(isHighlighted || isSelected || isLineage || nodeData.childIds.length > 0) && (
+        <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-800 text-[10px] font-mono">
+          <span
+            className={`uppercase tracking-wider transition-colors ${
+              isHighlighted || isSelected || isLineage
+                ? "text-[#E5C07B] font-semibold"
+                : "text-slate-400"
+            }`}
+          >
+            {isHighlighted || isSelected ? "Selected" : isLineage ? "Lineage" : ""}
           </span>
-        )}
-      </div>
+          {nodeData.childIds.length > 0 && (
+            <span className="text-slate-400">
+              {nodeData.childIds.length} {nodeData.childIds.length === 1 ? "Child" : "Children"}
+            </span>
+          )}
+        </div>
+      )}
 
       <div className="flex items-center gap-2.5">
         <div className="relative shrink-0">
@@ -102,9 +101,11 @@ export const SingleNodeComponent = memo(({ data }: NodeProps) => {
               &ldquo;{person.nickname}&rdquo;
             </p>
           )}
-          <p className="text-[11px] text-slate-400 font-mono truncate mt-0.5">
-            {person.birthDate || "?"} – {person.isDeceased ? person.deathDate || "✝" : "Living"}
-          </p>
+          {(person.birthDate || person.isDeceased) && (
+            <p className="text-[11px] text-slate-400 font-mono truncate mt-0.5">
+              {person.birthDate || ""}{person.isDeceased ? ` – ${person.deathDate || "✝"}` : ""}
+            </p>
+          )}
         </div>
       </div>
 

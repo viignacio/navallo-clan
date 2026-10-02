@@ -6,7 +6,7 @@ import { Navbar } from "../components/Navbar";
 import { FocusedFamilyExplorer } from "../components/explorer/FocusedFamilyExplorer";
 import { ClanCanvasView } from "../components/canvas/ClanCanvasView";
 import { enrichClanMembers } from "../lib/graphLayout";
-import { hasSanityCredentials, projectId } from "../../sanity/env";
+import { hasSanityCredentials } from "../../sanity/env";
 
 
 export default function ClanTreeHomePage() {
@@ -110,7 +110,7 @@ export default function ClanTreeHomePage() {
       {/* Footer */}
       <footer className="border-t border-slate-900 bg-slate-950/80 py-8 px-4 text-center text-xs text-slate-500 font-mono">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>© 1922 – {new Date().getFullYear()} Navallo Clan Archive. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Navallo Clan Archive. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <a
               href="/studio"
@@ -118,8 +118,6 @@ export default function ClanTreeHomePage() {
             >
               Sanity Studio CMS
             </a>
-            <span>•</span>
-            <span className="text-emerald-400">Project: {projectId || "local"}</span>
             <span>•</span>
             <span>Auto-Sync Active</span>
           </div>

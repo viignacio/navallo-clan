@@ -12,7 +12,6 @@ import {
   ChevronRight,
   Heart,
   Maximize2,
-  Sparkles,
   Info,
   PlusCircle,
   Cross,
@@ -89,9 +88,9 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
   // If focused person married into the clan (no parents recorded, but spouse has parents), trace through spouse
   const bloodlinePerson =
     (!person.parents || person.parents.length === 0) &&
-    spouses.length > 0 &&
-    spouses[0].parents &&
-    spouses[0].parents.length > 0
+      spouses.length > 0 &&
+      spouses[0].parents &&
+      spouses[0].parents.length > 0
       ? spouses[0]
       : person;
   const ancestryPath = getAncestryPath(bloodlinePerson._id, members);
@@ -148,8 +147,8 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
       branchType === "left-offshoot"
         ? leftMember?.name.split(" ")[0]
         : branchType === "right-offshoot"
-        ? rightMember?.name.split(" ")[0]
-        : undefined;
+          ? rightMember?.name.split(" ")[0]
+          : undefined;
 
     return childList.map((child, index) => {
       const isFirst = index === 0;
@@ -185,12 +184,6 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
       const isContainerSelected = isLeftSelected || isRightSelected;
       const isSelected = selectedPersonId === child._id;
 
-      const badgeLabel = isOffshoot
-        ? `Offshoot (${branchParentName})`
-        : hasSpouse
-        ? "Couple"
-        : "Child";
-
       return (
         <div
           key={child._id}
@@ -200,106 +193,93 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
             <div className="w-full h-6 relative">
               {isFirst && (
                 <div
-                  className={`absolute top-0 right-[-1px] left-1/2 h-0.5 ${
-                    isOffshoot
+                  className={`absolute top-0 right-[-1px] left-1/2 h-0.5 ${isOffshoot
                       ? "border-t-2 border-dashed border-amber-500/60"
                       : "bg-slate-700"
-                  }`}
+                    }`}
                 />
               )}
               {isLast && (
                 <div
-                  className={`absolute top-0 left-[-1px] right-1/2 h-0.5 ${
-                    isOffshoot
+                  className={`absolute top-0 left-[-1px] right-1/2 h-0.5 ${isOffshoot
                       ? "border-t-2 border-dashed border-amber-500/60"
                       : "bg-slate-700"
-                  }`}
+                    }`}
                 />
               )}
               {!isFirst && !isLast && (
                 <div
-                  className={`absolute top-0 left-[-1px] right-[-1px] h-0.5 ${
-                    isOffshoot
+                  className={`absolute top-0 left-[-1px] right-[-1px] h-0.5 ${isOffshoot
                       ? "border-t-2 border-dashed border-amber-500/60"
                       : "bg-slate-700"
-                  }`}
+                    }`}
                 />
               )}
               <div
-                className={`absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 ${
-                  isOffshoot
+                className={`absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 ${isOffshoot
                     ? "border-l-2 border-dashed border-amber-500/60"
                     : "bg-slate-700"
-                }`}
+                  }`}
               />
             </div>
           ) : (
             <div className="w-full h-6 relative">
               <div
-                className={`absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 ${
-                  isOffshoot
+                className={`absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 ${isOffshoot
                     ? "border-l-2 border-dashed border-amber-500/60"
                     : "bg-slate-700"
-                }`}
+                  }`}
               />
             </div>
           )}
 
           <div className="w-full px-1.5 sm:px-2 md:px-2.5">
             <div
-              className={`w-full rounded-2xl p-2 sm:p-2.5 transition-all duration-200 border backdrop-blur-md ${
-                isContainerSelected || isSelected
+              className={`w-full rounded-2xl p-2 sm:p-2.5 transition-all duration-200 border backdrop-blur-md ${isContainerSelected || isSelected
                   ? isOffshoot
                     ? "bg-slate-900/95 border-amber-400 ring-2 ring-amber-400/30 shadow-[0_0_20px_rgba(212,175,55,0.2)]"
                     : "bg-slate-900/95 border-[#D4AF37] ring-2 ring-[#D4AF37]/30 shadow-[0_0_20px_rgba(212,175,55,0.2)]"
                   : isOffshoot
-                  ? "bg-slate-900/85 border-amber-500/30 hover:border-amber-400/60 shadow-md"
-                  : "bg-slate-900/80 border-slate-800 hover:border-slate-700 shadow-md"
-              }`}
-            >
-              <div
-                className={`flex items-center justify-between pb-1.5 mb-1.5 border-b px-1 text-[10px] font-mono ${
-                  isOffshoot ? "border-amber-500/20" : "border-slate-800/80"
+                    ? "bg-slate-900/85 border-amber-500/30 hover:border-amber-400/60 shadow-md"
+                    : "bg-slate-900/80 border-slate-800 hover:border-slate-700 shadow-md"
                 }`}
-              >
-                <span
-                  className={`${
-                    isOffshoot
-                      ? "text-amber-400 font-semibold"
-                      : "text-[#E5C07B]/80 font-medium"
-                  } tracking-wider uppercase truncate`}
+            >
+              {(isOffshoot || grandchildrenCount > 0) && (
+                <div
+                  className={`flex items-center justify-between pb-1.5 mb-1.5 border-b px-1 text-[10px] font-mono ${isOffshoot ? "border-amber-500/20" : "border-slate-800/80"
+                    }`}
                 >
-                  {badgeLabel}
-                </span>
-                {grandchildrenCount > 0 ? (
-                  <span className="text-slate-400 truncate">
-                    {grandchildrenCount} {grandchildrenCount === 1 ? "child" : "children"}
-                  </span>
-                ) : (
-                  <span className="text-slate-500 truncate">
-                    Gen {child.generation || 2}
-                  </span>
-                )}
-              </div>
+                  {isOffshoot ? (
+                    <span className="text-amber-400 font-semibold tracking-wider uppercase truncate">
+                      Offshoot ({branchParentName})
+                    </span>
+                  ) : (
+                    <span />
+                  )}
+                  {grandchildrenCount > 0 && (
+                    <span className="text-slate-400 truncate">
+                      {grandchildrenCount} {grandchildrenCount === 1 ? "child" : "children"}
+                    </span>
+                  )}
+                </div>
+              )}
 
               {hasSpouse ? (
                 <div className="flex flex-col gap-1.5 relative">
                   <button
                     type="button"
                     onClick={() => onSelectPerson(leftPartner._id)}
-                    className={`w-full p-2 rounded-xl border text-left transition-all flex items-center gap-2.5 min-w-0 ${
-                      isLeftSelected
+                    className={`w-full p-2 rounded-xl border text-left transition-all flex items-center gap-2.5 min-w-0 ${isLeftSelected
                         ? "bg-[#D4AF37]/20 border-[#D4AF37] ring-1 ring-[#D4AF37]"
                         : "bg-slate-800/40 border-slate-800 hover:bg-slate-800/80 hover:border-slate-700"
-                    }`}
+                      }`}
                   >
                     <div className="relative shrink-0">
                       <div
-                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg overflow-hidden border ${
-                          leftPartner.isDeceased
+                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg overflow-hidden border ${leftPartner.isDeceased
                             ? "border-slate-700 grayscale contrast-105"
                             : "border-[#D4AF37]/30"
-                        } bg-slate-800 flex items-center justify-center`}
+                          } bg-slate-800 flex items-center justify-center`}
                       >
                         {leftPartner.photoUrl ? (
                           <img
@@ -320,28 +300,17 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
 
                     <div className="min-w-0 flex-1">
                       <p
-                        className={`text-xs sm:text-sm font-semibold truncate transition-colors ${
-                          isLeftSelected ? "text-[#F3CF65]" : "text-slate-100"
-                        }`}
+                        className={`text-xs sm:text-sm font-semibold truncate transition-colors ${isLeftSelected ? "text-[#F3CF65]" : "text-slate-100"
+                          }`}
                         title={leftPartner.name}
                       >
                         {leftPartner.name}
                       </p>
-                      <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-mono truncate">
-                        <span>
-                          {leftPartner._id === child._id
-                            ? "Child"
-                            : leftPartner.gender === "male"
-                            ? "Husband"
-                            : "Spouse"}
-                        </span>
-                        <span>•</span>
-                        {leftPartner.isDeceased ? (
-                          <span className="text-slate-500">✝ Deceased</span>
-                        ) : (
-                          <span className="text-emerald-400">Living</span>
-                        )}
-                      </div>
+                      {leftPartner.isDeceased && (
+                        <p className="text-[10px] text-slate-500 font-mono truncate mt-0.5">
+                          ✝ Deceased
+                        </p>
+                      )}
                     </div>
                   </button>
 
@@ -356,19 +325,17 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
                   <button
                     type="button"
                     onClick={() => onSelectPerson(rightPartner._id)}
-                    className={`w-full p-2 rounded-xl border text-left transition-all flex items-center gap-2.5 min-w-0 ${
-                      isRightSelected
+                    className={`w-full p-2 rounded-xl border text-left transition-all flex items-center gap-2.5 min-w-0 ${isRightSelected
                         ? "bg-[#D4AF37]/20 border-[#D4AF37] ring-1 ring-[#D4AF37]"
                         : "bg-slate-800/40 border-slate-800 hover:bg-slate-800/80 hover:border-slate-700"
-                    }`}
+                      }`}
                   >
                     <div className="relative shrink-0">
                       <div
-                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg overflow-hidden border ${
-                          rightPartner.isDeceased
+                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg overflow-hidden border ${rightPartner.isDeceased
                             ? "border-slate-700 grayscale contrast-105"
                             : "border-[#D4AF37]/30"
-                        } bg-slate-800 flex items-center justify-center`}
+                          } bg-slate-800 flex items-center justify-center`}
                       >
                         {rightPartner.photoUrl ? (
                           <img
@@ -389,28 +356,17 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
 
                     <div className="min-w-0 flex-1">
                       <p
-                        className={`text-xs sm:text-sm font-semibold truncate transition-colors ${
-                          isRightSelected ? "text-[#F3CF65]" : "text-slate-100"
-                        }`}
+                        className={`text-xs sm:text-sm font-semibold truncate transition-colors ${isRightSelected ? "text-[#F3CF65]" : "text-slate-100"
+                          }`}
                         title={rightPartner.name}
                       >
                         {rightPartner.name}
                       </p>
-                      <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-mono truncate">
-                        <span>
-                          {rightPartner._id === child._id
-                            ? "Child"
-                            : rightPartner.gender === "female"
-                            ? "Wife"
-                            : "Spouse"}
-                        </span>
-                        <span>•</span>
-                        {rightPartner.isDeceased ? (
-                          <span className="text-slate-500">✝ Deceased</span>
-                        ) : (
-                          <span className="text-emerald-400">Living</span>
-                        )}
-                      </div>
+                      {rightPartner.isDeceased && (
+                        <p className="text-[10px] text-slate-500 font-mono truncate mt-0.5">
+                          ✝ Deceased
+                        </p>
+                      )}
                     </div>
                   </button>
                 </div>
@@ -418,23 +374,21 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
                 <button
                   type="button"
                   onClick={() => onSelectPerson(child._id)}
-                  className={`w-full p-2 rounded-xl border text-left transition-all flex items-center gap-2.5 min-w-0 ${
-                    isSelected
+                  className={`w-full p-2 rounded-xl border text-left transition-all flex items-center gap-2.5 min-w-0 ${isSelected
                       ? isOffshoot
                         ? "bg-amber-500/20 border-amber-400 ring-1 ring-amber-400"
                         : "bg-[#D4AF37]/20 border-[#D4AF37] ring-1 ring-[#D4AF37]"
                       : "bg-slate-800/40 border-slate-800 hover:bg-slate-800/80 hover:border-slate-700"
-                  }`}
+                    }`}
                 >
                   <div className="relative shrink-0">
                     <div
-                      className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg overflow-hidden border ${
-                        child.isDeceased
+                      className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg overflow-hidden border ${child.isDeceased
                           ? "border-slate-700 grayscale contrast-105"
                           : isOffshoot
-                          ? "border-amber-400/40"
-                          : "border-[#D4AF37]/30"
-                      } bg-slate-800 flex items-center justify-center`}
+                            ? "border-amber-400/40"
+                            : "border-[#D4AF37]/30"
+                        } bg-slate-800 flex items-center justify-center`}
                     >
                       {child.photoUrl ? (
                         <img
@@ -455,26 +409,21 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
 
                   <div className="min-w-0 flex-1">
                     <p
-                      className={`text-xs sm:text-sm font-semibold truncate transition-colors ${
-                        isSelected
+                      className={`text-xs sm:text-sm font-semibold truncate transition-colors ${isSelected
                           ? isOffshoot
                             ? "text-amber-300"
                             : "text-[#F3CF65]"
                           : "text-slate-100"
-                      }`}
+                        }`}
                       title={child.name}
                     >
                       {child.name}
                     </p>
-                    <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-mono truncate">
-                      <span>Child</span>
-                      <span>•</span>
-                      {child.isDeceased ? (
-                        <span className="text-slate-500">✝ Deceased</span>
-                      ) : (
-                        <span className="text-emerald-400">Living</span>
-                      )}
-                    </div>
+                    {child.isDeceased && (
+                      <p className="text-[10px] text-slate-500 font-mono truncate mt-0.5">
+                        ✝ Deceased
+                      </p>
+                    )}
                   </div>
                 </button>
               )}
@@ -521,20 +470,18 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
             return (
               <React.Fragment key={ancestor._id}>
                 <div
-                  className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-xl border transition-all ${
-                    isStepActive
+                  className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-xl border transition-all ${isStepActive
                       ? "bg-[#D4AF37]/20 text-[#E5C07B] border-[#D4AF37]/40 shadow-sm"
                       : "bg-slate-800/60 hover:bg-slate-800 text-slate-300 border-slate-700/60"
-                  }`}
+                    }`}
                 >
                   <button
                     type="button"
                     onClick={() => onSelectPerson(leftPerson._id)}
-                    className={`hover:underline hover:text-[#F3CF65] transition-colors ${
-                      selectedPersonId === leftPerson._id
+                    className={`hover:underline hover:text-[#F3CF65] transition-colors ${selectedPersonId === leftPerson._id
                         ? "text-[#F3CF65] font-bold"
                         : ""
-                    }`}
+                      }`}
                     title={leftPerson.name}
                   >
                     {leftFirstName}
@@ -546,11 +493,10 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
                       <button
                         type="button"
                         onClick={() => onSelectPerson(rightPerson._id)}
-                        className={`hover:underline hover:text-[#F3CF65] transition-colors ${
-                          selectedPersonId === rightPerson._id
+                        className={`hover:underline hover:text-[#F3CF65] transition-colors ${selectedPersonId === rightPerson._id
                             ? "text-[#F3CF65] font-bold"
                             : ""
-                        }`}
+                          }`}
                         title={rightPerson.name}
                       >
                         {rightFirstName}
@@ -583,7 +529,7 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
             className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-[#D4AF37] text-slate-300 hover:text-slate-950 border border-slate-700 hover:border-[#D4AF37] transition-all text-xs font-semibold shadow-md group"
           >
             <Maximize2 className="w-3.5 h-3.5 text-[#E5C07B] group-hover:text-slate-950 transition-colors" />
-            <span>View in Figma Canvas</span>
+            <span>View in Canvas</span>
           </button>
         </div>
       </div>
@@ -607,7 +553,6 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
                   <div className="w-full sm:w-[340px] md:w-[380px]">
                     <PersonCard
                       person={parents[0]}
-                      roleLabel={parents[0].gender === "female" ? "Mother" : "Father"}
                       size="md"
                       onClick={() => onSelectPerson(parents[0]._id)}
                     />
@@ -634,7 +579,6 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
                     <PersonCard
                       key={parent._id}
                       person={parent}
-                      roleLabel={parent.gender === "female" ? "Mother" : "Father"}
                       size="md"
                       onClick={() => onSelectPerson(parent._id)}
                     />
@@ -705,36 +649,22 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
                 </div>
               </div>
 
-              {/* Left Member (Husband) */}
+              {/* Left Member */}
               <div className="relative">
                 <PersonCard
                   person={leftMember}
                   size="lg"
                   isFocused={leftMember._id === selectedPersonId}
-                  roleLabel={
-                    leftMember._id === selectedPersonId
-                      ? "Focal Member"
-                      : leftMember.gender === "male"
-                      ? "Husband"
-                      : "Spouse / Partner"
-                  }
                   onClick={() => onSelectPerson(leftMember._id)}
                 />
               </div>
 
-              {/* Right Member (Wife) */}
+              {/* Right Member */}
               <div className="relative">
                 <PersonCard
                   person={rightMember}
                   size="lg"
                   isFocused={rightMember._id === selectedPersonId}
-                  roleLabel={
-                    rightMember._id === selectedPersonId
-                      ? "Focal Member"
-                      : rightMember.gender === "female"
-                      ? "Wife"
-                      : "Spouse / Partner"
-                  }
                   onClick={() => onSelectPerson(rightMember._id)}
                 />
               </div>
@@ -746,7 +676,6 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
               person={person}
               size="lg"
               isFocused
-              roleLabel="Focal Member"
             />
             <div className="flex justify-center mt-3">
               <a
@@ -881,9 +810,8 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
                     <img
                       src={sibling.photoUrl}
                       alt={sibling.name}
-                      className={`w-full h-full object-cover ${
-                        sibling.isDeceased ? "grayscale" : ""
-                      }`}
+                      className={`w-full h-full object-cover ${sibling.isDeceased ? "grayscale" : ""
+                        }`}
                     />
                   )}
                 </div>
@@ -891,9 +819,11 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
                   <p className="text-xs font-medium text-slate-200 group-hover:text-[#E5C07B] truncate">
                     {sibling.name}
                   </p>
-                  <p className="text-[10px] text-slate-500 font-mono">
-                    {sibling.isDeceased ? "✝ Deceased" : "Living"}
-                  </p>
+                  {sibling.isDeceased && (
+                    <p className="text-[10px] text-slate-500 font-mono">
+                      ✝ Deceased
+                    </p>
+                  )}
                 </div>
               </button>
             ))}
