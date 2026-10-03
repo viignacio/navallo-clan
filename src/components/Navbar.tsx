@@ -1,13 +1,11 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import Link from "next/link";
 import { Person } from "../types/clan";
 import {
   Maximize2,
   Minimize2,
   Search,
-  Settings,
   X,
   ChevronRight,
   Shield,
@@ -19,7 +17,6 @@ interface NavbarProps {
   viewMode: "explorer" | "canvas";
   onToggleViewMode: () => void;
   onSelectPerson: (personId: string) => void;
-  hasSanityConfigured: boolean;
   isRefreshing?: boolean;
   onRefresh?: () => void;
 }
@@ -29,7 +26,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   viewMode,
   onToggleViewMode,
   onSelectPerson,
-  hasSanityConfigured,
   isRefreshing = false,
   onRefresh,
 }) => {
@@ -59,21 +55,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-sm font-bold tracking-wider text-slate-100 uppercase font-serif">
-                Navallo Clan
-              </h1>
-              {hasSanityConfigured && (
-                <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-950/80 text-emerald-400 border border-emerald-800/60 font-mono">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Sanity Live
-                </span>
-              )}
-            </div>
+            <h1 className="text-sm font-bold tracking-wider text-slate-100 uppercase font-serif">
+              Navallo Clan
+            </h1>
             <p className="text-[10px] text-slate-400 font-mono">
               {members.length > 0
                 ? `${members.length} Members`
-                : "Awaiting Sanity Entries"}
+                : "No Members"}
             </p>
           </div>
         </div>
@@ -136,11 +124,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Action Controls */}
         <div className="flex items-center gap-2">
-          {/* Refresh button for Sanity */}
-          {hasSanityConfigured && onRefresh && (
+          {/* Refresh button */}
+          {onRefresh && (
             <button
               onClick={onRefresh}
-              title="Refresh from Sanity"
+              title="Refresh data"
               className="p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-[#E5C07B] border border-slate-800 transition-colors"
             >
               <RefreshCw
@@ -152,11 +140,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* View Tree Button (Canvas toggle) */}
           <button
             onClick={onToggleViewMode}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all shadow-md ${
-              viewMode === "canvas"
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all shadow-md ${viewMode === "canvas"
                 ? "bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700"
                 : "bg-gradient-to-r from-[#D4AF37] to-[#C29D26] hover:from-[#F3CF65] hover:to-[#D4AF37] text-slate-950 shadow-[#D4AF37]/25"
-            }`}
+              }`}
           >
             {viewMode === "canvas" ? (
               <>
@@ -167,20 +154,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             ) : (
               <>
                 <Maximize2 className="w-3.5 h-3.5" />
-                <span>View Tree (Canvas)</span>
+                <span>Canvas Mode</span>
               </>
             )}
           </button>
-
-          {/* Sanity Studio Link */}
-          <Link
-            href="/studio"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800 transition-colors text-xs font-medium"
-            title="Open Sanity CMS Studio"
-          >
-            <Settings className="w-3.5 h-3.5 text-[#D4AF37]" />
-            <span className="hidden sm:inline">Sanity Studio</span>
-          </Link>
         </div>
       </div>
     </header>

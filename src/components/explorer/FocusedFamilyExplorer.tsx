@@ -12,8 +12,6 @@ import {
   ChevronRight,
   Heart,
   Maximize2,
-  Info,
-  PlusCircle,
   Cross,
   CornerDownRight,
   User,
@@ -34,45 +32,18 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
 }) => {
   if (members.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-6 animate-in fade-in duration-300">
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-4 animate-in fade-in duration-300">
         <div className="w-16 h-16 rounded-2xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center text-[#E5C07B] mx-auto shadow-2xl shadow-[#D4AF37]/10">
           <Users className="w-8 h-8" />
         </div>
 
         <div className="space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/60 border border-emerald-800/40 text-emerald-400 text-xs font-mono">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            Live Sanity Connected
-          </div>
           <h3 className="text-2xl font-bold text-slate-100 font-serif">
-            Your Clan Archive is Ready
+            No Clan Members Found
           </h3>
           <p className="text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
-            Your Sanity CMS dataset is empty right now. Start building your clan tree by creating your first member in Sanity Studio!
+            The archive is currently empty.
           </p>
-        </div>
-
-        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <a
-            href="/studio"
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#C29D26] hover:from-[#F3CF65] hover:to-[#D4AF37] text-slate-950 font-semibold text-sm shadow-xl shadow-[#D4AF37]/20 transition-all hover:scale-[1.02]"
-          >
-            <span>Open Sanity Studio (/studio)</span>
-            <ChevronRight className="w-4 h-4" />
-          </a>
-        </div>
-
-        <div className="mt-8 p-4 rounded-xl bg-slate-900/40 border border-slate-800/60 text-left text-xs text-slate-400 space-y-2">
-          <p className="font-semibold text-slate-300 flex items-center gap-1.5 font-mono uppercase tracking-wider text-[11px]">
-            <Info className="w-3.5 h-3.5 text-[#D4AF37]" />
-            Recommended sequence for creating entries:
-          </p>
-          <ol className="list-decimal list-inside space-y-1 text-slate-400 pl-1 leading-relaxed">
-            <li>Create the first ancestor or couple.</li>
-            <li>Create their spouse and link them via the <strong className="text-slate-300">Spouse</strong> reference field.</li>
-            <li>Create children and select their parents in the <strong className="text-slate-300">Parents</strong> reference field.</li>
-            <li>Watch them instantly link together in both the Explorer and Canvas!</li>
-          </ol>
         </div>
       </div>
     );
@@ -194,31 +165,31 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
               {isFirst && (
                 <div
                   className={`absolute top-0 right-[-1px] left-1/2 h-0.5 ${isOffshoot
-                      ? "border-t-2 border-dashed border-amber-500/60"
-                      : "bg-slate-700"
+                    ? "border-t-2 border-dashed border-amber-500/60"
+                    : "bg-slate-700"
                     }`}
                 />
               )}
               {isLast && (
                 <div
                   className={`absolute top-0 left-[-1px] right-1/2 h-0.5 ${isOffshoot
-                      ? "border-t-2 border-dashed border-amber-500/60"
-                      : "bg-slate-700"
+                    ? "border-t-2 border-dashed border-amber-500/60"
+                    : "bg-slate-700"
                     }`}
                 />
               )}
               {!isFirst && !isLast && (
                 <div
                   className={`absolute top-0 left-[-1px] right-[-1px] h-0.5 ${isOffshoot
-                      ? "border-t-2 border-dashed border-amber-500/60"
-                      : "bg-slate-700"
+                    ? "border-t-2 border-dashed border-amber-500/60"
+                    : "bg-slate-700"
                     }`}
                 />
               )}
               <div
                 className={`absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 ${isOffshoot
-                    ? "border-l-2 border-dashed border-amber-500/60"
-                    : "bg-slate-700"
+                  ? "border-l-2 border-dashed border-amber-500/60"
+                  : "bg-slate-700"
                   }`}
               />
             </div>
@@ -226,8 +197,8 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
             <div className="w-full h-6 relative">
               <div
                 className={`absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 ${isOffshoot
-                    ? "border-l-2 border-dashed border-amber-500/60"
-                    : "bg-slate-700"
+                  ? "border-l-2 border-dashed border-amber-500/60"
+                  : "bg-slate-700"
                   }`}
               />
             </div>
@@ -236,12 +207,12 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
           <div className="w-full px-1.5 sm:px-2 md:px-2.5">
             <div
               className={`w-full rounded-2xl p-2 sm:p-2.5 transition-all duration-200 border backdrop-blur-md ${isContainerSelected || isSelected
-                  ? isOffshoot
-                    ? "bg-slate-900/95 border-amber-400 ring-2 ring-amber-400/30 shadow-[0_0_20px_rgba(212,175,55,0.2)]"
-                    : "bg-slate-900/95 border-[#D4AF37] ring-2 ring-[#D4AF37]/30 shadow-[0_0_20px_rgba(212,175,55,0.2)]"
-                  : isOffshoot
-                    ? "bg-slate-900/85 border-amber-500/30 hover:border-amber-400/60 shadow-md"
-                    : "bg-slate-900/80 border-slate-800 hover:border-slate-700 shadow-md"
+                ? isOffshoot
+                  ? "bg-slate-900/95 border-amber-400 ring-2 ring-amber-400/30 shadow-[0_0_20px_rgba(212,175,55,0.2)]"
+                  : "bg-slate-900/95 border-[#D4AF37] ring-2 ring-[#D4AF37]/30 shadow-[0_0_20px_rgba(212,175,55,0.2)]"
+                : isOffshoot
+                  ? "bg-slate-900/85 border-amber-500/30 hover:border-amber-400/60 shadow-md"
+                  : "bg-slate-900/80 border-slate-800 hover:border-slate-700 shadow-md"
                 }`}
             >
               {(isOffshoot || grandchildrenCount > 0) && (
@@ -270,15 +241,15 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
                     type="button"
                     onClick={() => onSelectPerson(leftPartner._id)}
                     className={`w-full p-2 rounded-xl border text-left transition-all flex items-center gap-2.5 min-w-0 ${isLeftSelected
-                        ? "bg-[#D4AF37]/20 border-[#D4AF37] ring-1 ring-[#D4AF37]"
-                        : "bg-slate-800/40 border-slate-800 hover:bg-slate-800/80 hover:border-slate-700"
+                      ? "bg-[#D4AF37]/20 border-[#D4AF37] ring-1 ring-[#D4AF37]"
+                      : "bg-slate-800/40 border-slate-800 hover:bg-slate-800/80 hover:border-slate-700"
                       }`}
                   >
                     <div className="relative shrink-0">
                       <div
                         className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg overflow-hidden border ${leftPartner.isDeceased
-                            ? "border-slate-700 grayscale contrast-105"
-                            : "border-[#D4AF37]/30"
+                          ? "border-slate-700 grayscale contrast-105"
+                          : "border-[#D4AF37]/30"
                           } bg-slate-800 flex items-center justify-center`}
                       >
                         {leftPartner.photoUrl ? (
@@ -326,15 +297,15 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
                     type="button"
                     onClick={() => onSelectPerson(rightPartner._id)}
                     className={`w-full p-2 rounded-xl border text-left transition-all flex items-center gap-2.5 min-w-0 ${isRightSelected
-                        ? "bg-[#D4AF37]/20 border-[#D4AF37] ring-1 ring-[#D4AF37]"
-                        : "bg-slate-800/40 border-slate-800 hover:bg-slate-800/80 hover:border-slate-700"
+                      ? "bg-[#D4AF37]/20 border-[#D4AF37] ring-1 ring-[#D4AF37]"
+                      : "bg-slate-800/40 border-slate-800 hover:bg-slate-800/80 hover:border-slate-700"
                       }`}
                   >
                     <div className="relative shrink-0">
                       <div
                         className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg overflow-hidden border ${rightPartner.isDeceased
-                            ? "border-slate-700 grayscale contrast-105"
-                            : "border-[#D4AF37]/30"
+                          ? "border-slate-700 grayscale contrast-105"
+                          : "border-[#D4AF37]/30"
                           } bg-slate-800 flex items-center justify-center`}
                       >
                         {rightPartner.photoUrl ? (
@@ -375,19 +346,19 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
                   type="button"
                   onClick={() => onSelectPerson(child._id)}
                   className={`w-full p-2 rounded-xl border text-left transition-all flex items-center gap-2.5 min-w-0 ${isSelected
-                      ? isOffshoot
-                        ? "bg-amber-500/20 border-amber-400 ring-1 ring-amber-400"
-                        : "bg-[#D4AF37]/20 border-[#D4AF37] ring-1 ring-[#D4AF37]"
-                      : "bg-slate-800/40 border-slate-800 hover:bg-slate-800/80 hover:border-slate-700"
+                    ? isOffshoot
+                      ? "bg-amber-500/20 border-amber-400 ring-1 ring-amber-400"
+                      : "bg-[#D4AF37]/20 border-[#D4AF37] ring-1 ring-[#D4AF37]"
+                    : "bg-slate-800/40 border-slate-800 hover:bg-slate-800/80 hover:border-slate-700"
                     }`}
                 >
                   <div className="relative shrink-0">
                     <div
                       className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg overflow-hidden border ${child.isDeceased
-                          ? "border-slate-700 grayscale contrast-105"
-                          : isOffshoot
-                            ? "border-amber-400/40"
-                            : "border-[#D4AF37]/30"
+                        ? "border-slate-700 grayscale contrast-105"
+                        : isOffshoot
+                          ? "border-amber-400/40"
+                          : "border-[#D4AF37]/30"
                         } bg-slate-800 flex items-center justify-center`}
                     >
                       {child.photoUrl ? (
@@ -410,10 +381,10 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
                   <div className="min-w-0 flex-1">
                     <p
                       className={`text-xs sm:text-sm font-semibold truncate transition-colors ${isSelected
-                          ? isOffshoot
-                            ? "text-amber-300"
-                            : "text-[#F3CF65]"
-                          : "text-slate-100"
+                        ? isOffshoot
+                          ? "text-amber-300"
+                          : "text-[#F3CF65]"
+                        : "text-slate-100"
                         }`}
                       title={child.name}
                     >
@@ -471,16 +442,16 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
               <React.Fragment key={ancestor._id}>
                 <div
                   className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-xl border transition-all ${isStepActive
-                      ? "bg-[#D4AF37]/20 text-[#E5C07B] border-[#D4AF37]/40 shadow-sm"
-                      : "bg-slate-800/60 hover:bg-slate-800 text-slate-300 border-slate-700/60"
+                    ? "bg-[#D4AF37]/20 text-[#E5C07B] border-[#D4AF37]/40 shadow-sm"
+                    : "bg-slate-800/60 hover:bg-slate-800 text-slate-300 border-slate-700/60"
                     }`}
                 >
                   <button
                     type="button"
                     onClick={() => onSelectPerson(leftPerson._id)}
                     className={`hover:underline hover:text-[#F3CF65] transition-colors ${selectedPersonId === leftPerson._id
-                        ? "text-[#F3CF65] font-bold"
-                        : ""
+                      ? "text-[#F3CF65] font-bold"
+                      : ""
                       }`}
                     title={leftPerson.name}
                   >
@@ -494,8 +465,8 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
                         type="button"
                         onClick={() => onSelectPerson(rightPerson._id)}
                         className={`hover:underline hover:text-[#F3CF65] transition-colors ${selectedPersonId === rightPerson._id
-                            ? "text-[#F3CF65] font-bold"
-                            : ""
+                          ? "text-[#F3CF65] font-bold"
+                          : ""
                           }`}
                         title={rightPerson.name}
                       >
@@ -512,7 +483,7 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
           })}
         </div>
 
-        {/* Quick Actions (Jump to Root & Canvas View) */}
+        {/* Quick Actions (Jump to Root) */}
         <div className="flex items-center gap-2">
           {members.length > 0 && selectedPersonId !== members[0]._id && (
             <button
@@ -523,14 +494,6 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
               <span>Jump to Root</span>
             </button>
           )}
-
-          <button
-            onClick={onOpenCanvas}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-[#D4AF37] text-slate-300 hover:text-slate-950 border border-slate-700 hover:border-[#D4AF37] transition-all text-xs font-semibold shadow-md group"
-          >
-            <Maximize2 className="w-3.5 h-3.5 text-[#E5C07B] group-hover:text-slate-950 transition-colors" />
-            <span>View in Canvas</span>
-          </button>
         </div>
       </div>
 
@@ -562,17 +525,20 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-2xl mx-auto relative">
                   {/* Marriage or Co-Parent connector between parents */}
                   {sortedParents.length === 2 && (
-                    <div className="hidden sm:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 items-center justify-center pointer-events-none">
-                      <div className="w-5 h-0.5 bg-[#D4AF37]/60" />
-                      <div className="w-6 h-6 rounded-full bg-slate-900 border border-[#D4AF37]/60 flex items-center justify-center shadow-md">
-                        {areParentsSpouses ? (
-                          <Heart className="w-3 h-3 text-[#E5C07B]" fill="currentColor" />
-                        ) : (
-                          <span className="text-[10px] text-[#E5C07B] font-mono leading-none">✦</span>
-                        )}
+                    <>
+                      <div className="hidden sm:block absolute left-1/2 top-1/2 bottom-0 -translate-x-1/2 w-0.5 bg-slate-700 pointer-events-none" />
+                      <div className="hidden sm:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 items-center justify-center pointer-events-none">
+                        <div className="w-5 h-0.5 bg-[#D4AF37]/60" />
+                        <div className="w-6 h-6 rounded-full bg-slate-900 border border-[#D4AF37]/60 flex items-center justify-center shadow-md">
+                          {areParentsSpouses ? (
+                            <Heart className="w-3 h-3 text-[#E5C07B]" fill="currentColor" />
+                          ) : (
+                            <span className="text-[10px] text-[#E5C07B] font-mono leading-none">✦</span>
+                          )}
+                        </div>
+                        <div className="w-5 h-0.5 bg-[#D4AF37]/60" />
                       </div>
-                      <div className="w-5 h-0.5 bg-[#D4AF37]/60" />
-                    </div>
+                    </>
                   )}
 
                   {sortedParents.map((parent) => (
@@ -586,18 +552,6 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
                 </div>
               )}
 
-              {parents.length < 2 && (
-                <div className="flex justify-center mt-3">
-                  <a
-                    href={`/studio/structure/person;${person._id}`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-xs text-[#E5C07B] border border-slate-800 hover:border-[#D4AF37]/40 transition-colors"
-                  >
-                    <PlusCircle className="w-3.5 h-3.5 text-[#D4AF37]" />
-                    <span>Link Second Parent in Studio</span>
-                  </a>
-                </div>
-              )}
-
               {/* Descent Line from Parents down to Focal Member */}
               <div className="flex justify-center my-2">
                 <div className="w-0.5 h-8 bg-slate-700" />
@@ -605,19 +559,10 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="text-center py-5 px-6 rounded-2xl bg-slate-900/40 border border-slate-800/80 max-w-md mx-auto space-y-3">
+              <div className="text-center py-4 px-6 rounded-2xl bg-slate-900/40 border border-slate-800/80 max-w-md mx-auto">
                 <p className="text-xs text-slate-400 font-mono">
                   No parents linked for this member
                 </p>
-                <div>
-                  <a
-                    href={`/studio/structure/person;${person._id}`}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-xs font-semibold text-[#E5C07B] border border-[#D4AF37]/30 hover:border-[#D4AF37] transition-all shadow-md group"
-                  >
-                    <PlusCircle className="w-4 h-4 text-[#D4AF37] group-hover:rotate-90 transition-transform" />
-                    <span>Link Parents to {person.name.split(" ")[0]} in Studio</span>
-                  </a>
-                </div>
               </div>
 
               <div className="flex justify-center my-2">
@@ -628,11 +573,16 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
         </section>
       )}
 
-      {/* CENTER STAGE: FOCUSED PERSON & SPOUSE */}
-      <section className="relative">
-        {spouses.length > 0 ? (
-          <div className="max-w-4xl mx-auto relative">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch relative">
+      {/* FAMILY CORE: FOCUSED PERSON, SPOUSE & CHILDREN */}
+      <div className="space-y-0">
+        {/* CENTER STAGE: FOCUSED PERSON & SPOUSE */}
+        <section className="relative">
+          {spouses.length > 0 ? (
+            <div className="max-w-4xl mx-auto relative">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch relative">
+                {/* Vertical descent stem from marriage connector down to bottom of parents */}
+                <div className="hidden md:block absolute left-1/2 top-1/2 -bottom-2 -translate-x-1/2 w-0.5 bg-slate-700 pointer-events-none" />
+
               {/* Marriage connector between spouses on desktop */}
               <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 items-center justify-center pointer-events-none">
                 <div className="w-5 h-0.5 bg-[#D4AF37]/60" />
@@ -677,57 +627,41 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
               size="lg"
               isFocused
             />
-            <div className="flex justify-center mt-3">
-              <a
-                href={`/studio/structure/person;${person._id}`}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-[#E5C07B] border border-slate-800 hover:border-[#D4AF37]/50 text-xs font-medium transition-colors"
-              >
-                <PlusCircle className="w-3.5 h-3.5 text-[#D4AF37]" />
-                <span>Link Spouse to {person.name.split(" ")[0]} in Studio</span>
-              </a>
-            </div>
           </div>
         )}
       </section>
 
-      {/* Generation Below: CHILDREN */}
-      <section className="w-full">
+        {/* Generation Below: CHILDREN */}
+        <section className="w-full">
         {/* Children section badge & action */}
         <div className="relative flex flex-col items-center">
-          <div className="w-0.5 h-6 bg-slate-700" />
+          <div className="w-0.5 h-8 bg-slate-700" />
 
           <div className="relative z-10 flex items-center justify-center w-full max-w-4xl px-4">
             <div className="flex items-center gap-1.5 text-xs uppercase tracking-widest text-[#E5C07B] font-mono bg-slate-900/90 px-3.5 py-1 rounded-full border border-slate-800 shadow-md">
               <ArrowDown className="w-3 h-3 text-[#D4AF37]" />
               Children ({totalChildrenCount})
             </div>
-
-            <div className="absolute right-4 hidden sm:block">
-              <a
-                href="/studio/structure/person"
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-xs text-[#E5C07B] border border-slate-800 hover:border-[#D4AF37]/50 transition-colors"
-              >
-                <PlusCircle className="w-3.5 h-3.5 text-[#D4AF37]" />
-                <span>+ Add Child</span>
-              </a>
-            </div>
           </div>
+
+          {totalChildrenCount > 0 && (
+            <div className="w-0.5 h-6 bg-slate-700" />
+          )}
         </div>
 
         {totalChildrenCount > 0 ? (
-          <div className="w-full mt-2 space-y-8">
+          <div className="w-full space-y-8">
             {/* Case A: Joint children */}
             {jointChildren.length > 0 && (
-              <div className="w-full space-y-2">
-                <div className="relative flex flex-col items-center">
-                  <div className="w-0.5 h-6 bg-slate-700" />
-                  {(leftOutsideChildren.length > 0 || rightOutsideChildren.length > 0) && (
-                    <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-[#E5C07B] font-mono bg-slate-900/95 px-3 py-0.5 rounded-full border border-slate-800 shadow-sm mb-1">
+              <div className="w-full">
+                {(leftOutsideChildren.length > 0 || rightOutsideChildren.length > 0) && (
+                  <div className="flex justify-center mb-1">
+                    <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-[#E5C07B] font-mono bg-slate-900/95 px-3 py-0.5 rounded-full border border-slate-800 shadow-sm">
                       <Heart className="w-2.5 h-2.5 text-[#D4AF37] fill-[#D4AF37]/40" />
                       Mutual Children of {leftMember?.name.split(" ")[0]} & {rightMember?.name.split(" ")[0]} ({jointChildren.length})
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 <div className="flex items-start justify-center w-full flex-wrap gap-y-4">
                   {renderChildCards(jointChildren, "joint")}
@@ -737,13 +671,14 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
 
             {/* Case B: Left Member Offshoot Children */}
             {leftOutsideChildren.length > 0 && leftMember && (
-              <div className="w-full space-y-2 pt-6 border-t border-slate-800/80">
+              <div className="w-full pt-6 border-t border-slate-800/80">
                 <div className="relative flex flex-col items-center">
                   <div className="w-0.5 h-6 border-l-2 border-dashed border-amber-500/60" />
-                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-amber-300 font-mono bg-slate-900/95 px-3 py-0.5 rounded-full border border-amber-500/40 shadow-sm mb-1">
+                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-amber-300 font-mono bg-slate-900/95 px-3 py-0.5 rounded-full border border-amber-500/40 shadow-sm">
                     <CornerDownRight className="w-2.5 h-2.5 text-amber-400" />
                     Offshoot of {leftMember.name.split(" ")[0]} only ({leftOutsideChildren.length})
                   </div>
+                  <div className="w-0.5 h-6 border-l-2 border-dashed border-amber-500/60" />
                 </div>
 
                 <div className="flex items-start justify-center w-full flex-wrap gap-y-4">
@@ -754,13 +689,14 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
 
             {/* Case C: Right Member Offshoot Children */}
             {rightOutsideChildren.length > 0 && rightMember && (
-              <div className="w-full space-y-2 pt-6 border-t border-slate-800/80">
+              <div className="w-full pt-6 border-t border-slate-800/80">
                 <div className="relative flex flex-col items-center">
                   <div className="w-0.5 h-6 border-l-2 border-dashed border-amber-500/60" />
-                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-amber-300 font-mono bg-slate-900/95 px-3 py-0.5 rounded-full border border-amber-500/40 shadow-sm mb-1">
+                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-amber-300 font-mono bg-slate-900/95 px-3 py-0.5 rounded-full border border-amber-500/40 shadow-sm">
                     <CornerDownRight className="w-2.5 h-2.5 text-amber-400" />
                     Offshoot of {rightMember.name.split(" ")[0]} only ({rightOutsideChildren.length})
                   </div>
+                  <div className="w-0.5 h-6 border-l-2 border-dashed border-amber-500/60" />
                 </div>
 
                 <div className="flex items-start justify-center w-full flex-wrap gap-y-4">
@@ -770,20 +706,14 @@ export const FocusedFamilyExplorer: React.FC<FocusedFamilyExplorerProps> = ({
             )}
           </div>
         ) : (
-          <div className="text-center py-8 px-6 rounded-2xl bg-slate-900/40 border border-slate-800/80 max-w-md mx-auto space-y-3 mt-4">
+          <div className="text-center py-6 px-6 rounded-2xl bg-slate-900/40 border border-slate-800/80 max-w-md mx-auto mt-4">
             <p className="text-xs text-slate-400 font-mono">
               No registered children recorded for this member.
             </p>
-            <a
-              href="/studio/structure/person"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#D4AF37]/20 to-[#C29D26]/20 hover:from-[#D4AF37]/30 hover:to-[#C29D26]/30 text-[#E5C07B] border border-[#D4AF37]/40 text-xs font-semibold transition-all shadow-md group"
-            >
-              <PlusCircle className="w-4 h-4 text-[#D4AF37] group-hover:rotate-90 transition-transform" />
-              <span>Create Child for {person.name.split(" ")[0]} in Studio</span>
-            </a>
           </div>
         )}
-      </section>
+        </section>
+      </div>
 
       {/* SIBLINGS SECTION (if any exist) */}
       {siblings.length > 0 && (

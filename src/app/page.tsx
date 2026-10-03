@@ -6,7 +6,6 @@ import { Navbar } from "../components/Navbar";
 import { FocusedFamilyExplorer } from "../components/explorer/FocusedFamilyExplorer";
 import { ClanCanvasView } from "../components/canvas/ClanCanvasView";
 import { enrichClanMembers } from "../lib/graphLayout";
-import { hasSanityCredentials } from "../../sanity/env";
 
 
 export default function ClanTreeHomePage() {
@@ -91,7 +90,6 @@ export default function ClanTreeHomePage() {
         viewMode={viewMode}
         onToggleViewMode={() => setViewMode("canvas")}
         onSelectPerson={(id) => setSelectedPersonId(id)}
-        hasSanityConfigured={hasSanityCredentials}
         isRefreshing={isRefreshing}
         onRefresh={() => fetchSanityData(false)}
       />
@@ -112,13 +110,6 @@ export default function ClanTreeHomePage() {
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <p>© {new Date().getFullYear()} Navallo Clan Archive. All rights reserved.</p>
           <div className="flex items-center gap-4">
-            <a
-              href="/studio"
-              className="text-[#E5C07B] hover:underline flex items-center gap-1"
-            >
-              Sanity Studio CMS
-            </a>
-            <span>•</span>
             <span>Auto-Sync Active</span>
           </div>
         </div>

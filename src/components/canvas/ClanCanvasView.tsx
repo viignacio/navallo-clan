@@ -164,7 +164,7 @@ function ClanCanvasInternal({
           <div className="hidden sm:flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-slate-900/80 border border-slate-800 backdrop-blur-md shadow-lg">
             <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse" />
             <span className="text-xs uppercase tracking-widest text-slate-300 font-mono">
-              Figma Canvas View • {members.length} Members
+              {members.length} Members
             </span>
           </div>
         </div>
@@ -230,11 +230,10 @@ function ClanCanvasInternal({
           <button
             onClick={() => setShowMiniMap((prev) => !prev)}
             title={showMiniMap ? "Hide Minimap" : "Show Minimap"}
-            className={`p-2.5 rounded-xl border shadow-lg backdrop-blur-md transition-all ${
-              showMiniMap
+            className={`p-2.5 rounded-xl border shadow-lg backdrop-blur-md transition-all ${showMiniMap
                 ? "bg-slate-800 text-[#E5C07B] border-[#D4AF37]/50"
                 : "bg-slate-900/90 hover:bg-slate-800 text-slate-400 border-slate-800 hover:border-slate-700"
-            }`}
+              }`}
           >
             <Map className="w-4 h-4" />
           </button>
@@ -264,11 +263,10 @@ function ClanCanvasInternal({
 
       {/* React Flow Infinite Canvas with responsive right boundary to prevent overlapping the inspector */}
       <div
-        className={`h-full transition-all duration-300 relative ${
-          selectedPerson && immediateFamily && isInspectorOpen
+        className={`h-full transition-all duration-300 relative ${selectedPerson && immediateFamily && isInspectorOpen
             ? "w-full md:w-[calc(100%-360px)]"
             : "w-full"
-        }`}
+          }`}
       >
         <ReactFlow
           nodes={nodes}
@@ -343,11 +341,10 @@ function ClanCanvasInternal({
           <div className="p-4 border-b border-slate-800/80 bg-slate-900/60">
             <div className="flex items-center gap-3">
               <div
-                className={`w-14 h-14 rounded-xl overflow-hidden border shrink-0 ${
-                  selectedPerson.isDeceased
+                className={`w-14 h-14 rounded-xl overflow-hidden border shrink-0 ${selectedPerson.isDeceased
                     ? "border-slate-700 grayscale contrast-105"
                     : "border-[#D4AF37]/50"
-                } bg-slate-800`}
+                  } bg-slate-800`}
               >
                 {selectedPerson.photoUrl ? (
                   <img
@@ -446,9 +443,8 @@ function ClanCanvasInternal({
                             <img
                               src={m.photoUrl}
                               alt={m.name}
-                              className={`w-full h-full object-cover ${
-                                m.isDeceased ? "grayscale" : ""
-                              }`}
+                              className={`w-full h-full object-cover ${m.isDeceased ? "grayscale" : ""
+                                }`}
                             />
                           )}
                         </div>
